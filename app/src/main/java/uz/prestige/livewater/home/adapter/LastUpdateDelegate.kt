@@ -1,6 +1,5 @@
 package uz.prestige.livewater.home.adapter
 
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate

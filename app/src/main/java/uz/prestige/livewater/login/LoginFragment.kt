@@ -2,20 +2,12 @@ package uz.prestige.livewater.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import uz.prestige.livewater.MainActivity
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentLoginBinding
-import uz.prestige.livewater.home.HomeFragment
 import uz.prestige.livewater.login.view_model.LoginViewModel
 
 class LoginActivity : AppCompatActivity() {

@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Live water</string>
+    <string name="route_text_content">
+    access-control-allow-credentials: true&#10;
+    access-control-allow-origin: https://edumonitoring.uz&#10;
+    allow: PUT,PATCH&#10;
+    connection: keep-alive&#10;
+    content-length: 58&#10;
+    content-type: application/json&#10;
+    cross-origin-opener-policy: same-origin&#10;
+    date: Mon,11 Dec 2023 08:56:00 GMT&#10;
+    referrer-policy: same-origin&#10;
+    server: nginx/1.18.0 (Ubuntu)&#10;
+    vary: Accept,Origin&#10;
+    www-authenticate: Token&#10;
+    x-content-type-options: nosniff&#10;
+    x-frame-options: DENY
+</string>
+    <string name="asosiy">Asosiy</string>
+    <string name="konstruktor">Konstruktor</string>
+    <string name="xarita">Xarita</string>
+    <string name="device">Device</string>
+    <string name="yo_naltirish">Yo\'naltirish</string>
+
+</resources>

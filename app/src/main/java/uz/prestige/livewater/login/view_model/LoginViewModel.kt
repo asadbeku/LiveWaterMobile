@@ -17,14 +17,25 @@ class LoginViewModel : ViewModel() {
     val status: LiveData<Boolean>
         get() = _status
 
+    private var _updatingState = MutableLiveData<Boolean>()
+    val updatingState: LiveData<Boolean>
+        get() = _updatingState
+
+    private var _errorMessage = MutableLiveData<String>()
+    val errorMessage: LiveData<String>
+        get() = _errorMessage
+
     fun checkAuth(login: String, password: String) {
         viewModelScope.launch {
-
+            _updatingState.postValue(true)
             repo.authCheck(login, password)
                 .catch {
                     Log.e(TAG, "checkAuth: $it")
+                    _updatingState.postValue(false)
+                    _errorMessage.postValue("Xatolik yuz berdi!")
                 }
                 .collect {
+                    _updatingState.postValue(false)
                     _status.postValue(it)
                 }
         }

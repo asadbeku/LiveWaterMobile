@@ -19,7 +19,7 @@ abstract class LastUpdateBaseHolder(view: View) : RecyclerView.ViewHolder(view) 
         binding.numbering.text = numbering.toString()
         binding.deviceSerialNumber.text = serial
         binding.level.text = level
-        binding.salanity.text = salinity
+        binding.pressure.text = salinity
         binding.volume.text = volume
 
         setupSignalTypeIcon(signal)

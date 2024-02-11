@@ -1,11 +1,11 @@
 package uz.prestige.livewater.home.types
 
-data class DeviceLastUpdate(
+data class LastUpdateType(
     val id: String?,
     val serial: String?,
     val numbering: Int?,
     val level: String?,
-    val salinity: String?,
+    val pressure: String?,
     val volume: String?,
     val signal: Boolean,
     val time: String?

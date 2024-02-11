@@ -2,10 +2,10 @@ package uz.prestige.livewater.home.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
-import uz.prestige.livewater.home.types.DeviceLastUpdate
+import uz.prestige.livewater.home.types.LastUpdateType
 
 class LastUpdatesAdapter :
-    AsyncListDifferDelegationAdapter<DeviceLastUpdate>(LastUpdateDiffutilsCallBack()) {
+    AsyncListDifferDelegationAdapter<LastUpdateType>(LastUpdateDiffutilsCallBack()) {
 
     companion object {
         private const val LAST_UPDATE_DELEGATE_ID = 1
@@ -15,17 +15,17 @@ class LastUpdatesAdapter :
         delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, LastUpdateDelegate())
     }
 
-    class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<DeviceLastUpdate>() {
+    class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<LastUpdateType>() {
         override fun areItemsTheSame(
-            oldItem: DeviceLastUpdate,
-            newItem: DeviceLastUpdate
+            oldItem: LastUpdateType,
+            newItem: LastUpdateType
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: DeviceLastUpdate,
-            newItem: DeviceLastUpdate
+            oldItem: LastUpdateType,
+            newItem: LastUpdateType
         ): Boolean {
             return oldItem::class == newItem::class
         }

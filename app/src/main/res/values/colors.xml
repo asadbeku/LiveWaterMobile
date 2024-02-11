@@ -8,6 +8,7 @@
     <color name="grayPrimary">#DEE1E6</color>
     <color name="statusBarColor">#FEFEFE</color>
     <color name="yellowColor">#EFB034</color>
-    <color name="blackPrimary">#171A1F</color>
+<!--    <color name="darkGray">#171A1F</color>-->
     <color name="redPrimary">#ff0000 </color>
+    <color name="darkGray">#808080</color>
 </resources>

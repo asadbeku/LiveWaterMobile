@@ -50,8 +50,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    //Glide
-    implementation(libs.glide)
+
 
     //Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
@@ -85,10 +84,15 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    implementation (libs.kotlinx.coroutines.core.v150)
+
+
 //    Animations
     implementation(libs.lottie)
     implementation(libs.converter.gson)
-    implementation (libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.shimmer)
+    implementation(libs.androidx.swiperefreshlayout)
 
 
 }

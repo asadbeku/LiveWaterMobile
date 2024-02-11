@@ -1,50 +1,66 @@
 package uz.prestige.livewater.home.view_model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.home.types.DeviceLastUpdate
+import uz.prestige.livewater.home.types.LastUpdateType
 import uz.prestige.livewater.home.types.DeviceStatuses
-import java.lang.Exception
 
 class HomeViewModel : ViewModel() {
     private val TAG = "HomeViewModel"
-    private val repo = HomeRepository()
+    private val repository = HomeRepository()
 
     private var _devicesStatuses = MutableLiveData<DeviceStatuses>()
     val deviceStatuses: LiveData<DeviceStatuses>
         get() = _devicesStatuses
 
-    private var _lastUpdatesList = MutableLiveData<List<DeviceLastUpdate>>()
-    val lastUpdatesList: LiveData<List<DeviceLastUpdate>>
+    private var _lastUpdatesList = MutableLiveData<List<LastUpdateType>>()
+    val lastUpdatesList: LiveData<List<LastUpdateType>>
         get() = _lastUpdatesList
 
     private var _updatingState = MutableLiveData<Boolean>()
     val updatingState: LiveData<Boolean>
         get() = _updatingState
 
+    private var _error = MutableLiveData<String>()
+    val error: LiveData<String>
+        get() = _error
+
     fun getDevicesStatusesAndLastUpdates() {
         viewModelScope.launch {
-            val start = System.currentTimeMillis()
+
             _updatingState.postValue(true)
+            val lastUpdatesResult = async {
+                repository.getLastUpdates()
+                    .catch { e ->
+                        _error.postValue(e.message)
+                        _updatingState.postValue(false)
+                    }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull()
+            }.await()
 
-            try {
-                val devicesStatusesResult = async { repo.getDevicesStatusesFlow().first() }.await()
-                val lastUpdatesResult = async { repo.getLastUpdates().first() }.await()
+            val devicesStatusesResult = async {
+                repository.getDevicesStatusesFlow()
+                    .catch { e ->
+                        _error.postValue(e.message)
+                        _updatingState.postValue(false)
+                    }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull()
+            }.await()
 
-                _devicesStatuses.postValue(devicesStatusesResult)
-                _lastUpdatesList.postValue(lastUpdatesResult)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in getDevicesStatusesAndLastUpdates: $e")
-            } finally {
-                Log.d(TAG, "time: ${System.currentTimeMillis() - start}")
-                _updatingState.postValue(false)
-            }
+            _devicesStatuses.postValue(devicesStatusesResult ?: DeviceStatuses("0", "0", "0"))
+            _lastUpdatesList.postValue(lastUpdatesResult ?: emptyList())
+            _updatingState.postValue(false)
         }
     }
 }

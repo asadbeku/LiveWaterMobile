@@ -4,10 +4,10 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <CheckBox
+    <RadioButton
+        android:id="@+id/radioButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="8600010204050607" />
-
+        android:text="Region nomi" />
 
 </LinearLayout>

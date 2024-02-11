@@ -4,15 +4,15 @@ import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import uz.prestige.livewater.R
-import uz.prestige.livewater.home.types.DeviceLastUpdate
+import uz.prestige.livewater.home.types.LastUpdateType
 import uz.prestige.livewater.utils.inflate
 
 class LastUpdateDelegate :
-    AbsListItemAdapterDelegate<DeviceLastUpdate, DeviceLastUpdate, LastUpdateDelegate.LastUpdateViewHolder>() {
+    AbsListItemAdapterDelegate<LastUpdateType, LastUpdateType, LastUpdateDelegate.LastUpdateViewHolder>() {
 
     override fun isForViewType(
-        p0: DeviceLastUpdate,
-        p1: MutableList<DeviceLastUpdate>,
+        p0: LastUpdateType,
+        p1: MutableList<LastUpdateType>,
         p2: Int
     ): Boolean {
         return true
@@ -25,7 +25,7 @@ class LastUpdateDelegate :
     }
 
     override fun onBindViewHolder(
-        p0: DeviceLastUpdate,
+        p0: LastUpdateType,
         p1: LastUpdateViewHolder,
         p2: MutableList<Any>
     ) {
@@ -33,13 +33,13 @@ class LastUpdateDelegate :
     }
 
     class LastUpdateViewHolder(view: View) : LastUpdateBaseHolder(view) {
-        fun bind(lastUpdate: DeviceLastUpdate) {
+        fun bind(lastUpdate: LastUpdateType) {
             bind(
                 numbering = lastUpdate.numbering ?: 0,
                 serial = lastUpdate.serial.orEmpty(),
                 level = lastUpdate.level.orEmpty(),
                 volume = lastUpdate.volume.orEmpty(),
-                salinity = lastUpdate.salinity.orEmpty(),
+                salinity = lastUpdate.pressure.orEmpty(),
                 time = lastUpdate.time.orEmpty(),
                 signal = lastUpdate.signal
             )

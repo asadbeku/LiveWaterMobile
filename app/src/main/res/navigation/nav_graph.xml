@@ -9,12 +9,12 @@
         android:id="@+id/homeFragment"
         android:name="uz.prestige.livewater.home.HomeFragment"
         android:label="HomeFragment"
-        tools:layout="@layout/home_fragment" />
+        tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/routeFragment"
         android:name="uz.prestige.livewater.route.RouteFragment"
         android:label="RouteFragment"
-        tools:layout="@layout/route_fragment" />
+        tools:layout="@layout/fragment_route" />
     <fragment
         android:id="@+id/constructorFragment"
         android:name="uz.prestige.livewater.constructor.ConstructorFragment"
@@ -24,7 +24,7 @@
         android:id="@+id/mapFragment"
         android:name="uz.prestige.livewater.map.MapFragment"
         android:label="MapFragment"
-        tools:layout="@layout/map_fragment" />
+        tools:layout="@layout/fragment_map" />
     <fragment
         android:id="@+id/deviceFragment"
         android:name="uz.prestige.livewater.device.DeviceFragment"

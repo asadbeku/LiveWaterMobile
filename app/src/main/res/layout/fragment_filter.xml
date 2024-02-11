@@ -3,12 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="80dp"
         android:layout_gravity="center"
         android:backgroundTint="@color/white"
         android:elevation="8dp"
@@ -24,23 +25,23 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="34dp"
-                    android:src="@drawable/back_arrow"
-                    app:tint="@color/blackPrimary" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/line_24" />
+
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
+                    android:layout_marginTop="12dp"
                     android:layout_marginEnd="34dp"
                     android:fontFamily="@font/noto_sans_bold"
                     android:text="Filters"
-                    android:textColor="@color/blackPrimary"
+                    android:textColor="@color/black"
                     android:textSize="20sp" />
 
             </LinearLayout>
@@ -49,111 +50,40 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+
+    <LinearLayout
+        android:id="@+id/mainContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/topAppBar">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/noto_sans_bold"
+            android:text="Hisobot olish diapazonini tanlang"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/noto_sans_bold"
-                android:text="Hisobot olish diapazonini tanlang"
-                android:textColor="@color/blackPrimary"
-                android:textSize="16sp"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_marginEnd="20dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#F3F4F6"
-                    app:cardCornerRadius="8dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginStart="10dp"
-                            android:src="@drawable/time_icon"
-                            app:tint="@color/blackPrimary" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:fontFamily="@font/noto_sans"
-                            android:gravity="center"
-                            android:text="00:00"
-                            android:textColor="@color/blackPrimary" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#F3F4F6"
-                    app:cardCornerRadius="8dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginStart="10dp"
-                            android:src="@drawable/time_icon"
-                            app:tint="@color/blackPrimary" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:fontFamily="@font/noto_sans"
-                            android:gravity="center"
-                            android:text="23:59"
-                            android:textColor="@color/blackPrimary" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
+            android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+                android:id="@+id/cardViewStartTime"
+                android:layout_width="0dp"
                 android:layout_height="35dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginEnd="20dp"
+                android:layout_weight="1"
                 android:backgroundTint="#F3F4F6"
                 app:cardCornerRadius="8dp"
                 app:strokeWidth="0dp">
@@ -169,97 +99,193 @@
                         android:layout_height="24dp"
                         android:layout_marginStart="10dp"
                         android:src="@drawable/time_icon"
-                        app:tint="@color/blackPrimary" />
+                        app:tint="@color/darkGray" />
 
                     <TextView
+                        android:id="@+id/startTimeTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
                         android:fontFamily="@font/noto_sans"
                         android:gravity="center"
-                        android:text="14.10.2023 - 19.12.2023"
-                        android:textColor="@color/blackPrimary" />
+                        android:text="00:00"
+                        android:textColor="@color/darkGray" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardViewEndTime"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:backgroundTint="#F3F4F6"
+                app:cardCornerRadius="8dp"
+                app:strokeWidth="0dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/noto_sans_bold"
-                    android:text="Kerakli qurilmalarni tanlang"
-                    android:textColor="@color/blackPrimary"
-                    android:textSize="16sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:itemCount="8"
-                    tools:listitem="@layout/item_devices_name" />
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="10dp"
+                        android:src="@drawable/time_icon"
+                        app:tint="@color/darkGray" />
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/noto_sans_bold"
-                    android:text="Kerakli qurilmalarni tanlang"
-                    android:textColor="@color/blackPrimary"
-                    android:textSize="16sp"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/textField"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <AutoCompleteTextView
+                    <TextView
+                        android:id="@+id/endTimeTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:text="Region" />
+                        android:layout_marginStart="5dp"
+                        android:fontFamily="@font/noto_sans"
+                        android:gravity="center"
+                        android:text="23:59"
+                        android:textColor="@color/darkGray" />
 
-                </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
 
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-    </androidx.core.widget.NestedScrollView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardViewDate"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#F3F4F6"
+            app:cardCornerRadius="8dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/time_icon"
+                    app:tint="@color/darkGray" />
+
+                <TextView
+                    android:id="@+id/dateTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/noto_sans"
+                    android:gravity="center"
+                    android:text="14.10.2023 - 19.12.2023"
+                    android:textColor="@color/darkGray" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/noto_sans_bold"
+                android:text="@string/select_region"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <RadioGroup
+                android:id="@+id/radioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            </RadioGroup>
+
+
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/recyclerViewRegions"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                tools:itemCount="4"-->
+<!--                tools:listitem="@layout/item_devices_name" />-->
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/regionContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/noto_sans_bold"
+                android:text="Kerakli qurilmalarni tanlang"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/deviceSerialNumber"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:text="Barcha qurilmalar" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:orientation="horizontal">
+        app:layout_constraintTop_toBottomOf="@id/mainContainer">
 
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginEnd="5dp"
-            android:text="Qayta o'rnatish" />
+            android:layout_weight="1"
+            android:background="@drawable/primary_button_shape"
+            android:text="Qayta o'rnatish"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/colorPrimary" />
 
         <Button
+            android:id="@+id/applyButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Qayta o'rnatish" />
+            android:background="@drawable/primary_button_shape"
+            android:text="Qo'llash"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/colorPrimary" />
     </LinearLayout>
 
 

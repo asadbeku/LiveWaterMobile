@@ -12,17 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
-import uz.prestige.livewater.databinding.HomeFragmentBinding
+import uz.prestige.livewater.databinding.FragmentHomeBinding
 import uz.prestige.livewater.home.adapter.LastUpdatesAdapter
-import uz.prestige.livewater.home.types.DeviceLastUpdate
+import uz.prestige.livewater.home.types.LastUpdateType
 import uz.prestige.livewater.home.types.DeviceStatuses
 import uz.prestige.livewater.home.view_model.HomeViewModel
 
-class HomeFragment : Fragment(R.layout.home_fragment) {
+class HomeFragment: Fragment(R.layout.fragment_home) {
 
     private val TAG = "HomeFragment"
 
-    private var _binding: HomeFragmentBinding? = null
+    private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: HomeViewModel by viewModels()
@@ -33,12 +33,13 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = HomeFragmentBinding.inflate(inflater, container, false)
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupUI()
         observeViewModel()
     }
@@ -46,6 +47,11 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
     private fun setupUI() {
         setStatusBarColor()
         initLastUpdateRecyclerView()
+
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.getDevicesStatusesAndLastUpdates()
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun setStatusBarColor() {
@@ -70,7 +76,6 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
             viewModel.getDevicesStatusesAndLastUpdates()
         }
 
-
         viewModel.deviceStatuses.observe(viewLifecycleOwner) { devicesStatuses ->
             updateDeviceStatusUI(devicesStatuses)
         }
@@ -92,13 +97,23 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
         }
     }
 
-    private fun updateLastUpdateRecyclerView(updatingList: List<DeviceLastUpdate>) {
+    private fun updateLastUpdateRecyclerView(updatingList: List<LastUpdateType>) {
         lastUpdateAdapter?.items = updatingList
         lastUpdateAdapter?.notifyDataSetChanged()
     }
 
     private fun updateUpdatingTextVisibility(isUpdating: Boolean) {
-        binding.updatingText.visibility = if (isUpdating) View.VISIBLE else View.GONE
+        if (isUpdating) {
+            binding.shimmerHorizontalContainers.visibility = View.VISIBLE
+            binding.shimmerRecycler.visibility = View.VISIBLE
+            binding.lastUpdateRecycler.visibility = View.GONE
+            binding.horizontalContainers.visibility = View.GONE
+        } else {
+            binding.shimmerHorizontalContainers.visibility = View.GONE
+            binding.shimmerRecycler.visibility = View.GONE
+            binding.lastUpdateRecycler.visibility = View.VISIBLE
+            binding.horizontalContainers.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroy() {

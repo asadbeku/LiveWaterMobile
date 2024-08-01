@@ -1,8 +1,9 @@
 package uz.prestige.livewater.device.add_device
 
+import AddDeviceViewModel
+import uz.prestige.livewater.constructor.type.DeviceType
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -14,9 +15,8 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityAddDeviceBinding
-import uz.prestige.livewater.device.add_device.view_model.AddDeviceViewModel
+import uz.prestige.livewater.device.UiState
 import uz.prestige.livewater.device.type.DeviceDataPassType
-import java.io.File
 
 class AddNewDeviceActivity : AppCompatActivity() {
 
@@ -24,6 +24,7 @@ class AddNewDeviceActivity : AppCompatActivity() {
     private var fileUri: Uri? = null
     private lateinit var getContent: ActivityResultLauncher<String>
     private val viewModel: AddDeviceViewModel by viewModels()
+    private var deviceInfo: DeviceType? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,12 +33,30 @@ class AddNewDeviceActivity : AppCompatActivity() {
 
         setupUI()
         setupObservers()
+        getBundleData()
+
+    }
+
+    private fun getBundleData() {
+        val bundle = intent.getBundleExtra("bundle")
+        deviceInfo = bundle?.getParcelable("deviceInfo")
+
+        deviceInfo?.let { device ->
+            binding.serialNumberInput.editText?.setText(device.serialNumber)
+            binding.privateKeyInput.editText?.setText(device.devicePrivateKey)
+            binding.locationInput.editText?.setText(device.lat + ", " + device.long)
+            binding.region.editText?.setText(device.regionName)
+            binding.objectNameInput.editText?.setText(device.objectName)
+            binding.owner.editText?.setText(device.ownerName)
+            binding.passportNameInput.editText?.setText("file.xls")
+
+        }
+        setupButtons()
     }
 
     private fun setupUI() {
         setStatusBarColor()
         setupContentLauncher()
-        setupButtons()
     }
 
     private fun setupContentLauncher() {
@@ -55,9 +74,18 @@ class AddNewDeviceActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
+
+        if (deviceInfo != null) {
+            binding.addDeviceButton.text = "O'zgartirish"
+        } else {
+            binding.addDeviceButton.text = "Qo'shish"
+        }
+
         binding.addDeviceButton.setOnClickListener {
-            if (isCheckedFields()) {
+            if (isCheckedFields() && deviceInfo == null) {
                 addNewDevice()
+            } else if (isCheckedFields() && deviceInfo != null) {
+                changeDevice()
             }
         }
 
@@ -68,6 +96,26 @@ class AddNewDeviceActivity : AppCompatActivity() {
         binding.choosePassportButton.setOnClickListener {
             getContent.launch("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         }
+
+        binding.backButton.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun changeDevice() {
+
+        viewModel.changeDeviceInfo(
+            applicationContext, DeviceDataPassType(
+                deviceId = deviceInfo?.id ?: "null",
+                serialNumber = binding.serialNumber.text.toString(),
+                privateKey = binding.privateKey.text.toString(),
+                location = binding.location.text.toString(),
+                objectName = binding.objectName.text.toString(),
+                regionId = getRegionId(binding.region.editText?.text.toString()),
+                ownerId = getOwnerId(binding.owner.editText?.text.toString()),
+                uri = fileUri
+            )
+        )
     }
 
     private fun setupObservers() {
@@ -82,6 +130,36 @@ class AddNewDeviceActivity : AppCompatActivity() {
         viewModel.regions.observe(this) { regions ->
             val regionNames = regions.map { it.name }
             regionsDropDown(regionNames)
+        }
+
+        viewModel.error.observe(this@AddNewDeviceActivity) { state ->
+            when (state) {
+                is UiState.Error -> {
+                    Snackbar.make(
+                        binding.addDeviceMainContainer,
+                        state.message,
+                        Snackbar.LENGTH_LONG
+                    ).setBackgroundTint(getColor(R.color.redPrimary)).show()
+                }
+
+                is UiState.Success -> {
+                    Snackbar.make(
+                        binding.addDeviceMainContainer,
+                        state.message,
+                        Snackbar.LENGTH_SHORT
+                    ).setBackgroundTint(getColor(R.color.greenPrimary)).show()
+                }
+
+                else -> {
+                    Snackbar.make(
+                        binding.addDeviceMainContainer,
+                        "Nomalum xabar",
+                        Snackbar.LENGTH_SHORT
+                    ).setBackgroundTint(getColor(R.color.darkGray)).show()
+                }
+            }
+
+
         }
     }
 
@@ -101,6 +179,7 @@ class AddNewDeviceActivity : AppCompatActivity() {
         viewModel.addNewDevice(
             applicationContext,
             DeviceDataPassType(
+                deviceId = "",
                 serialNumber = binding.serialNumber.text.toString(),
                 privateKey = binding.privateKey.text.toString(),
                 location = binding.location.text.toString(),

@@ -7,6 +7,7 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
+        maven { url = uri("https://chaquo.com/maven-test") }
         mavenCentral()
         gradlePluginPortal()
     }

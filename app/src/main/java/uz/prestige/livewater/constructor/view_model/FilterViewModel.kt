@@ -28,7 +28,7 @@ class FilterViewModel : ViewModel() {
                 .flowOn(Dispatchers.IO)
                 .collect { regions ->
                     val list = regions.toMutableList()
-                    list.add(0, RegionType("all", "Barcha hududlar"))
+                    list.add(0, RegionType("all", 1, "Barcha hududlar", 0))
                     _regionsLiveData.postValue(list)
                 }
         }

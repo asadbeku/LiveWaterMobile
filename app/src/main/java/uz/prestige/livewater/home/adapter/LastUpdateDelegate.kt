@@ -35,13 +35,14 @@ class LastUpdateDelegate :
     class LastUpdateViewHolder(view: View) : LastUpdateBaseHolder(view) {
         fun bind(lastUpdate: LastUpdateType) {
             bind(
-                numbering = lastUpdate.numbering ?: 0,
+                numbering = lastUpdate.numbering,
                 serial = lastUpdate.serial.orEmpty(),
                 level = lastUpdate.level.orEmpty(),
                 volume = lastUpdate.volume.orEmpty(),
                 salinity = lastUpdate.pressure.orEmpty(),
                 time = lastUpdate.time.orEmpty(),
-                signal = lastUpdate.signal
+                signal = lastUpdate.signal,
+                name = lastUpdate.name
             )
         }
     }

@@ -13,21 +13,9 @@
         android:title="@string/konstruktor"/>
 
     <item
-        android:id="@+id/mapFragment"
-        android:enabled="true"
-        android:icon="@drawable/maps__icon"
-        android:title="@string/xarita"/>
-
-    <item
         android:id="@+id/deviceFragment"
         android:enabled="true"
         android:icon="@drawable/device_icon"
         android:title="@string/device"/>
-
-    <item
-        android:id="@+id/routeFragment"
-        android:enabled="true"
-        android:icon="@drawable/route_icon"
-        android:title="@string/yo_naltirish"/>
 
 </menu>

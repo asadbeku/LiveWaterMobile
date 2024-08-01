@@ -1,10 +1,10 @@
 package uz.prestige.livewater.device.adapter
 
+import uz.prestige.livewater.constructor.type.DeviceType
 import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import uz.prestige.livewater.R
-import uz.prestige.livewater.constructor.type.DeviceType
 import uz.prestige.livewater.utils.inflate
 
 class DeviceDelegate(private val onClicked: (position: Int) -> Unit) :

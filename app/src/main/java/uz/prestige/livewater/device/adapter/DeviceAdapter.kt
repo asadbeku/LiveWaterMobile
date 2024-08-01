@@ -1,14 +1,20 @@
 package uz.prestige.livewater.device.adapter
 
+import uz.prestige.livewater.constructor.type.DeviceType
 import androidx.recyclerview.widget.DiffUtil
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
-import uz.prestige.livewater.constructor.type.DeviceType
 
 class DeviceAdapter(onClicked: (position: Int) -> Unit) :
     AsyncListDifferDelegationAdapter<DeviceType>(LastUpdateDiffutilsCallBack()) {
 
+    var oldList: List<DeviceType> = listOf()
+
     companion object {
         private const val LAST_UPDATE_DELEGATE_ID = 1
+    }
+
+    fun submitList(list: List<DeviceType>) {
+        items = list
     }
 
     init {
@@ -16,6 +22,7 @@ class DeviceAdapter(onClicked: (position: Int) -> Unit) :
     }
 
     class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<DeviceType>() {
+
         override fun areItemsTheSame(
             oldItem: DeviceType,
             newItem: DeviceType
@@ -27,9 +34,7 @@ class DeviceAdapter(onClicked: (position: Int) -> Unit) :
             oldItem: DeviceType,
             newItem: DeviceType
         ): Boolean {
-            return oldItem::class == newItem::class
+            return oldItem == newItem
         }
-
-
     }
 }

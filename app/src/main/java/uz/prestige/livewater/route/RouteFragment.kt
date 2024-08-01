@@ -5,12 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentRouteBinding
+import uz.prestige.livewater.device.UiState
 import uz.prestige.livewater.route.adapter.RouteAdapter
 import uz.prestige.livewater.route.view_model.RouteViewModel
 import uz.prestige.livewater.utils.toFormattedDate
@@ -88,12 +90,46 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
         viewModel.baseDataById.observe(viewLifecycleOwner) {
             val snackBar = Snackbar.make(
                 requireView(),
-                "Level: ${it.level}, Volume: ${it.volume}, Salinity: ${it.salinity}, Date:${it.date.toFormattedTime()} ${it.date.toFormattedDate()}",
+                "Level: ${it.level}, Volume: ${it.volume}, Date:${it.date.toFormattedTime()} ${it.date.toFormattedDate()}",
                 7000
             )
             snackBar.setAction("Yopish") {
                 snackBar.dismiss()
             }.show()
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Error -> {
+                    context?.let {
+                        Snackbar.make(
+                            requireView(),
+                            state.message,
+                            Snackbar.LENGTH_LONG
+                        ).setBackgroundTint(it.getColor(R.color.redPrimary)).show()
+                    }
+                }
+
+                is UiState.None -> {
+                    context?.let {
+                        Snackbar.make(
+                            requireView(),
+                            "Nomalum xabar",
+                            Snackbar.LENGTH_SHORT
+                        ).setBackgroundTint(it.getColor(R.color.darkGray)).show()
+                    }
+                }
+
+                else -> {
+                    context?.let {
+                        Snackbar.make(
+                            requireView(),
+                            "Muvofaqiyatli",
+                            Snackbar.LENGTH_SHORT
+                        ).setBackgroundTint(it.getColor(R.color.greenPrimary)).show()
+                    }
+                }
+            }
         }
 
     }

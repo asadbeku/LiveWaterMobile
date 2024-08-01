@@ -5,9 +5,14 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:statusBarColor">@color/statusBarColor</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
-    <style name="Theme.LiveWater" parent="Base.Theme.LiveWater" />
+    <style name="Theme.LiveWater" parent="Base.Theme.LiveWater">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+    </style>
+
 
     <style name="AppTheme.RoundedCornerMaterialButton" parent="Widget.AppCompat.Button.Colored">
         <item name="android:background">@drawable/primary_button_shape</item>
@@ -16,6 +21,21 @@
 
     <style name="Toolbar.NavigationButton" parent="Widget.AppCompat.Toolbar.Button.Navigation">
         <item name="android:elevation">8dp</item>
+        <item name="android:backgroundTint">@color/colorPrimary</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.AppBarLayout" parent="Widget.Design.AppBarLayout">
+
+        <item name="android:backgroundTint">@color/colorPrimary</item>
+
+    </style>
+
+    <style name="Widget.App.Toolbar.Surface" parent="Widget.Material3.Toolbar.Surface">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Surface</item>
+    </style>
+
+    <style name="ThemeOverlay.App.Toolbar.Surface" parent="ThemeOverlay.Material3.Toolbar.Surface">
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
 </resources>

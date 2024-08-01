@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import uz.prestige.livewater.device.UiState
 import uz.prestige.livewater.route.types.BaseDataType
 import uz.prestige.livewater.route.types.RouteType
 
@@ -32,12 +33,15 @@ class RouteViewModel : ViewModel() {
     val baseDataById: LiveData<BaseDataType>
         get() = _baseDataById
 
+    private val _error = MutableLiveData<UiState>()
+    val error: LiveData<UiState> get() = _error
+
     fun getRouteList() {
         viewModelScope.launch {
             _updatingState.postValue(true)
             repository.getRouteListFlow()
                 .catch {
-                    Log.d("RouteViewModel", "$it")
+                    _error.postValue(UiState.Error(it.message.toString()))
                 }
                 .flowOn(Dispatchers.IO)
                 .collect {
@@ -55,14 +59,13 @@ class RouteViewModel : ViewModel() {
             _updatingStateById.postValue(true)
             repository.getBaseDataById(id)
                 .catch {
-                    Log.d("RouteViewModel", "$it")
+                    _error.postValue(UiState.Error(it.message.toString()))
                 }
                 .flowOn(Dispatchers.IO)
                 .collect { basedata ->
                     _updatingStateById.postValue(false)
                     _baseDataById.postValue(basedata)
                 }
-
         }
     }
 

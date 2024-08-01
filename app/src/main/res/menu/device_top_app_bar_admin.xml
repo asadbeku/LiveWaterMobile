@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <item
+        android:id="@+id/menuRegion"
+        android:contentDescription="@string/regions_description"
+        android:icon="@drawable/region_icon"
+        android:iconTint="@color/white"
+        android:title="Region"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menuMap"
+        android:contentDescription="@string/map_description"
+        android:icon="@drawable/maps__icon"
+        android:title="Map"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/testDevice"
+        android:contentDescription="@string/map_description"
+        android:icon="@drawable/test_icon"
+        android:iconTint="@color/white"
+        android:title="Test"
+        app:showAsAction="ifRoom" />
+
+
+</menu>

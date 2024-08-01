@@ -31,7 +31,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/deviceSerialNumber"
+            android:id="@+id/deviceObjectName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/noto_sans_bold"

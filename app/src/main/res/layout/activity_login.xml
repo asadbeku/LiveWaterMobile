@@ -9,15 +9,33 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
+        android:id="@+id/authContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:src="@drawable/auth_icon" />
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_gravity="center"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:orientation="vertical">
@@ -60,7 +78,6 @@
                     android:gravity="center_vertical"
                     android:hint="Usernameni kiriting"
                     android:inputType="text"
-                    android:text="asadbekman"
                     android:maxLength="15"
                     android:padding="12dp"
                     android:textSize="18sp" />
@@ -96,7 +113,6 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/catamaran"
                     android:gravity="center_vertical"
-                    android:text="20010827Aa"
                     android:hint="Parolni kiriting"
                     android:inputType="textPassword"
                     android:padding="10dp"
@@ -146,6 +162,13 @@
                 android:text="tomonidan ishlab chiqarildi"
                 android:textColor="@color/darkGray"
                 android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Test"
+                android:visibility="gone" />
 
         </LinearLayout>
 

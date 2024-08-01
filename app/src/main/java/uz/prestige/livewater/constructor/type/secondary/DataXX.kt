@@ -7,10 +7,11 @@ data class DataXX(
     val ip_address: String,
     val lat: Double,
     val long: Double,
-    val owner: Owner,
+    val owner: Owner?,
     val name: String,
     val port: Int,
     val region: Region,
     val serie: String,
-    val updated_at: String
+    val updated_at: String,
+    val isWorking: Boolean
 )

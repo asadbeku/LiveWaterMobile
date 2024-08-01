@@ -1,5 +1,7 @@
 package uz.prestige.livewater.device
 
+import uz.prestige.livewater.constructor.type.DeviceType
+import uz.prestige.livewater.regions.RegionsActivity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,6 +17,10 @@ import uz.prestige.livewater.databinding.DevicesFragmentBinding
 import uz.prestige.livewater.device.adapter.DeviceAdapter
 import uz.prestige.livewater.device.add_device.AddNewDeviceActivity
 import uz.prestige.livewater.device.view_model.DeviceViewModel
+import uz.prestige.livewater.login.TokenManager
+import uz.prestige.livewater.map.MapActivity
+import uz.prestige.livewater.test.TestDeviceActivity
+
 
 class DeviceFragment : Fragment(R.layout.devices_fragment) {
 
@@ -39,12 +45,61 @@ class DeviceFragment : Fragment(R.layout.devices_fragment) {
         observeViewModel()
 
         addNewDevice()
-
     }
 
     private fun setupUI() {
         setStatusBarColor()
         initLastUpdateRecyclerView()
+
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.getDevices()
+            binding.swipeRefresh.isRefreshing = false
+        }
+
+        if (TokenManager.getRole(requireContext()) == "admin") {
+            binding.toolbar.inflateMenu(R.menu.device_top_app_bar_admin)
+        } else {
+            binding.toolbar.inflateMenu(R.menu.device_top_app_bar_operator)
+        }
+
+
+
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.menuMap -> {
+                    // Handle map item click
+                    startActivity(Intent(requireContext(), MapActivity::class.java))
+                    Snackbar.make(requireView(), "Menu map is clicked", Snackbar.LENGTH_SHORT)
+                        .show()
+                    true
+                }
+
+                R.id.menuRegion -> {
+
+                    Snackbar.make(requireView(), "Regions menu is clicked", Snackbar.LENGTH_SHORT)
+                        .show()
+
+                    startActivity(Intent(requireContext(), RegionsActivity::class.java))
+                    true
+                }
+
+                R.id.testDevice -> {
+                    startActivity(Intent(requireContext(), TestDeviceActivity::class.java))
+
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        if (TokenManager.getRole(requireContext()) == "admin") {
+            binding.addDeviceButton.visibility = View.VISIBLE
+        } else {
+            binding.addDeviceButton.visibility = View.GONE
+        }
+
+
     }
 
     private fun setStatusBarColor() {
@@ -62,20 +117,25 @@ class DeviceFragment : Fragment(R.layout.devices_fragment) {
 
     private fun changeDevice(position: Int) {
         val id = viewModel.getDeviceId(position)
+        val deviceInfo: DeviceType = viewModel.getDeviceDataById(id)!!
 
+        val intent = Intent(requireContext(), AddNewDeviceActivity::class.java)
+
+        // Create a bundle to pass data to the activity
+        val bundle = Bundle()
+        bundle.putParcelable("deviceInfo", deviceInfo) // Assuming uz.prestige.livewater.constructor.type.DeviceType is Parcelable
+
+        // Put the bundle into the intent
+        intent.putExtra("bundle", bundle)
+
+        // Start the activity
+        startActivity(intent)
     }
 
     private fun initLastUpdateRecyclerView() {
-
         viewModel.getDevices()
 
-        deviceAdapter = DeviceAdapter {
-            Snackbar.make(
-                requireView(),
-                "Pressed : ${viewModel.getDeviceId(it)}",
-                Snackbar.LENGTH_SHORT
-            ).show()
-        }
+        deviceAdapter = DeviceAdapter { changeDevice(it) }
 
         with(binding.deviceRecycler) {
             adapter = deviceAdapter
@@ -85,8 +145,9 @@ class DeviceFragment : Fragment(R.layout.devices_fragment) {
     }
 
     private fun observeViewModel() {
+
         viewModel.devicesList.observe(viewLifecycleOwner) {
-            deviceAdapter?.items = it
+            deviceAdapter?.submitList(it)
         }
 
         viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->

@@ -27,7 +27,7 @@ class LastUpdatesAdapter :
             oldItem: LastUpdateType,
             newItem: LastUpdateType
         ): Boolean {
-            return oldItem::class == newItem::class
+            return oldItem == newItem
         }
 
 

@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -15,8 +17,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LiveWater"
         tools:targetApi="31">
+        <profileable android:shell="true" />
 
-
+        <activity
+            android:name=".test.TestDeviceActivity"
+            android:exported="false"
+            android:theme="@style/Theme.LiveWater" />
+        <activity
+            android:name=".map.MapActivity"
+            android:exported="true" />
         <activity
             android:name=".login.LoginActivity"
             android:exported="true">
@@ -26,18 +35,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".users.AddUserActivity"
+            android:exported="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true" />
         <activity
             android:name=".device.add_device.AddNewDeviceActivity"
             android:exported="true" />
-
+        <activity
+            android:name=".regions.RegionsActivity"
+            android:exported="true" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <meta-data
+            android:name="com.yandex.mapkit.apikey"
+            android:value="c8fef523-5f77-4426-849c-4ef407cbb9c9" />
     </application>
 
 </manifest>

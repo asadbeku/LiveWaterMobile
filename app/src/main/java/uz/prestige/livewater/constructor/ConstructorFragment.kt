@@ -8,9 +8,15 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.constructor.adapter.ConstructorAdapter
+import uz.prestige.livewater.constructor.adapter.ConstructorPagingAdapter
 import uz.prestige.livewater.constructor.view_model.ConstructorViewModel
 import uz.prestige.livewater.databinding.ConstructorFragmentBinding
 import uz.prestige.livewater.utils.toFormattedDate
@@ -20,8 +26,9 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment), FilterListe
     private var _binding: ConstructorFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private var constructorAdapter: ConstructorAdapter? = null
+    //    private var constructorAdapter: ConstructorAdapter? = null
     private val viewModel: ConstructorViewModel by viewModels()
+    private var constructorAdapter: ConstructorPagingAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,20 +62,20 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment), FilterListe
     }
 
     private fun initLastUpdateRecyclerView() {
-        setupObservers()
-
-        constructorAdapter = ConstructorAdapter()
+        this.constructorAdapter = ConstructorPagingAdapter()
         binding.constructorRecyclerView.apply {
-            adapter = constructorAdapter
+            adapter = this@ConstructorFragment.constructorAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
+
+        setupObservers()
     }
 
     private fun setupObservers() {
-        viewModel.getConstructor("", "", "all", "all")
-        viewModel.constructorList.observe(viewLifecycleOwner) {
-            constructorAdapter?.items = it
-        }
+//        viewModel.getConstructor("", "", "all", "all")
+//        viewModel.constructorList.observe(viewLifecycleOwner) {
+//            this.constructorAdapter?.submitData(it)
+//        }
         viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
             if (isUpdating) {
                 binding.shimmerRecycler.visibility = View.VISIBLE
@@ -78,6 +85,22 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment), FilterListe
                 binding.shimmerRecycler.stopShimmer()
                 binding.shimmerRecycler.visibility = View.GONE
                 binding.mainContainer.visibility = View.VISIBLE
+            }
+        }
+
+        getConstructorData("", "", "all", "all")
+    }
+
+    private fun getConstructorData(
+        startTime: String,
+        endTime: String,
+        regionId: String,
+        deviceId: String
+    ) {
+        lifecycleScope.launch {
+            viewModel.fetchConstructorData(startTime, endTime, regionId, deviceId)
+                .flowOn(Dispatchers.IO).collectLatest {
+                constructorAdapter?.submitData(it)
             }
         }
     }
@@ -103,7 +126,10 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment), FilterListe
                 "${startTime.toLong().toFormattedDate()} - ${endTime.toLong().toFormattedDate()}"
         }
 
-        viewModel.getConstructor(startTime, endTime, regionId, deviceId)
+//        viewModel.getConstructor(startTime, endTime, regionId, deviceId)
+
+        getConstructorData(startTime, endTime, regionId, deviceId)
+
         Log.d("onApplyTag", "onApply: $regionId $deviceId")
     }
 }

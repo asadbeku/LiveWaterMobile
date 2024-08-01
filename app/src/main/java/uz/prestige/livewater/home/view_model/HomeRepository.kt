@@ -1,12 +1,18 @@
 package uz.prestige.livewater.home.view_model
 
+import androidx.lifecycle.LiveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.liveData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.home.types.LastUpdateType
 import uz.prestige.livewater.home.types.DeviceStatuses
-import uz.prestige.livewater.home.types.test.LastUpdateTestType
 import uz.prestige.livewater.network.ApiService
 import uz.prestige.livewater.network.Network
+import uz.prestige.livewater.utils.ConstructorPagingSource
+import uz.prestige.livewater.utils.convertTestTypeToLastUpdates
 
 class HomeRepository {
     private var all = "null"
@@ -19,15 +25,11 @@ class HomeRepository {
         emit(DeviceStatuses(all, active, inActive))
     }
 
-    suspend fun getLastUpdates() = flow {
+    suspend fun getLastUpdates(): Flow<List<LastUpdateType>> = flow {
+        val response = Network.buildService(ApiService::class.java).getLastUpdate()
+        val list = response.body()?.convertTestTypeToLastUpdates() ?: emptyList()
 
-        val response = Network.buildService(ApiService::class.java).getLastUpdate(50)
-
-        val list = convertTestTypeToLastUpdates(response.body()!!)
-
-        val counter = list.map { device ->
-            if (device.signal) 1 else 0
-        }.sum()
+        val counter = list.count { it.signal }
 
         active = counter.toString()
         all = list.size.toString()
@@ -35,21 +37,7 @@ class HomeRepository {
         emit(list)
     }
 
-    private fun convertTestTypeToLastUpdates(list: LastUpdateTestType): List<LastUpdateType> {
-        var counter = 1
-        val convertedList = list.data.map { data ->
-            LastUpdateType(
-                id = data._id,
-                serial = data.device.serie,
-                numbering = counter,
-                level = data.level.toString(),
-                pressure = data.pressure.toString(),
-                volume = data.volume.toString(),
-                signal = if (data.signal == "good") true else false,
-                time = data.date_in_ms.toString()
-            ).also { counter++ }
-        }
-
-        return convertedList
+    suspend fun crashTest(){
+        val response = Network.buildService(ApiService::class.java).getLastUpdate()
     }
 }

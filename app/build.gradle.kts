@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     id("androidx.navigation.safeargs")
     id("kotlin-kapt")
+    id("kotlin-android")
+    id("kotlin-parcelize")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -13,21 +16,32 @@ android {
         applicationId = "uz.prestige.livewater"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
+
+        ndk {
+            abiFilters.clear()
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
         release {
             isMinifyEnabled = false
+            isDebuggable = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
+
+
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -51,7 +65,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
 
-
     //Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
@@ -59,6 +72,7 @@ dependencies {
     //RecyclerView
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.paging.runtime.ktx)
 
     implementation(libs.androidx.recyclerview)
     implementation(libs.adapterdelegates4)
@@ -84,7 +98,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation (libs.kotlinx.coroutines.core.v150)
+    implementation(libs.kotlinx.coroutines.core.v150)
 
 
 //    Animations
@@ -94,5 +108,11 @@ dependencies {
     implementation(libs.shimmer)
     implementation(libs.androidx.swiperefreshlayout)
 
+//    Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+
+//    Yandex map
+    implementation(libs.maps.mobile)
 
 }

@@ -21,13 +21,13 @@
         android:label="ConstructorFragment"
         tools:layout="@layout/constructor_fragment" />
     <fragment
-        android:id="@+id/mapFragment"
-        android:name="uz.prestige.livewater.map.MapFragment"
-        android:label="MapFragment"
-        tools:layout="@layout/fragment_map" />
-    <fragment
         android:id="@+id/deviceFragment"
         android:name="uz.prestige.livewater.device.DeviceFragment"
         android:label="DeviceFragment"
         tools:layout="@layout/devices_fragment" />
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="uz.prestige.livewater.users.UserFragment"
+        android:label="UserFragment"
+        tools:layout="@layout/fragment_user" />
 </navigation>

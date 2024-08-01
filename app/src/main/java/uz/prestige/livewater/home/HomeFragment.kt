@@ -1,5 +1,6 @@
 package uz.prestige.livewater.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,23 +9,30 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.coroutines.delay
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentHomeBinding
 import uz.prestige.livewater.home.adapter.LastUpdatesAdapter
+import uz.prestige.livewater.home.adapter.new_adapter.LastUpdatePagingAdapter
 import uz.prestige.livewater.home.types.LastUpdateType
 import uz.prestige.livewater.home.types.DeviceStatuses
 import uz.prestige.livewater.home.view_model.HomeViewModel
+import uz.prestige.livewater.login.LoginActivity
+import uz.prestige.livewater.login.TokenManager
 
-class HomeFragment: Fragment(R.layout.fragment_home) {
+class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val TAG = "HomeFragment"
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: HomeViewModel by viewModels()
     private var lastUpdateAdapter: LastUpdatesAdapter? = null
 
@@ -42,6 +50,24 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
 
         setupUI()
         observeViewModel()
+
+        binding.toolbar.menu
+
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            // Handle menu item clicks
+            when (menuItem.itemId) {
+                R.id.exit -> {
+                    TokenManager.clearToken(requireContext())
+
+                    val intent = Intent(requireContext(), LoginActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                    true
+                }
+                // Add more cases for other menu items if needed
+                else -> false
+            }
+        }
     }
 
     private fun setupUI() {
@@ -54,12 +80,6 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun setStatusBarColor() {
-        requireActivity().window.statusBarColor =
-            ContextCompat.getColor(requireActivity(), R.color.colorPrimary)
-        requireActivity().window.decorView.systemUiVisibility = 0
-    }
-
     private fun initLastUpdateRecyclerView() {
         lastUpdateAdapter = LastUpdatesAdapter()
 
@@ -70,11 +90,18 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
         }
     }
 
+    private fun setStatusBarColor() {
+        requireActivity().window.statusBarColor =
+            ContextCompat.getColor(requireActivity(), R.color.colorPrimary)
+        requireActivity().window.decorView.systemUiVisibility = 0
+    }
+
+    private fun showError(error: String) {
+        Snackbar.make(requireView(), "Error: $error", Snackbar.LENGTH_LONG).show()
+    }
+
     private fun observeViewModel() {
-        lifecycleScope.launch {
-            delay(800)
-            viewModel.getDevicesStatusesAndLastUpdates()
-        }
+        viewModel.getDevicesStatusesAndLastUpdates()
 
         viewModel.deviceStatuses.observe(viewLifecycleOwner) { devicesStatuses ->
             updateDeviceStatusUI(devicesStatuses)
@@ -86,6 +113,10 @@ class HomeFragment: Fragment(R.layout.fragment_home) {
 
         viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
             updateUpdatingTextVisibility(isUpdating)
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            showError(it)
         }
     }
 

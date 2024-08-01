@@ -15,9 +15,9 @@ abstract class LastUpdateBaseHolder(view: View) : RecyclerView.ViewHolder(view) 
 
     }
 
-    fun bind(numbering: Int, serial: String,level: String, salinity: String, volume: String, signal: Boolean, time: String) {
-        binding.numbering.text = numbering.toString()
-        binding.deviceSerialNumber.text = serial
+    fun bind(numbering: String, serial: String,level: String, salinity: String, volume: String, signal: Boolean, time: String, name: String) {
+        binding.numbering.text = numbering
+        binding.deviceObjectName.text = name
         binding.level.text = level
         binding.pressure.text = salinity
         binding.volume.text = volume

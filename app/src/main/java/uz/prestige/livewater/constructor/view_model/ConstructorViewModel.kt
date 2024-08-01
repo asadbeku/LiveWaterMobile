@@ -1,16 +1,19 @@
 package uz.prestige.livewater.constructor.view_model
 
 import android.util.Log
-import android.util.LogPrinter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.constructor.type.ConstructorType
+import uz.prestige.livewater.utils.ConstructorPagingSource
 
 class ConstructorViewModel : ViewModel() {
 
@@ -23,6 +26,22 @@ class ConstructorViewModel : ViewModel() {
     private var _updatingState = MutableLiveData<Boolean>()
     val updatingState: LiveData<Boolean>
         get() = _updatingState
+
+    fun fetchConstructorData(
+        startTime: String,
+        endTime: String,
+        deviceSerial: String,
+        regionId: String
+    ) = Pager(
+        config = PagingConfig(pageSize = 6),
+        pagingSourceFactory = {
+            ConstructorPagingSource(
+                startTime,
+                endTime,
+                regionId,
+                deviceSerial
+            )
+        }).flow.cachedIn(viewModelScope)
 
     fun getConstructor(startTime: String, endTime: String, deviceSerial: String, regionId: String) {
         viewModelScope.launch {

@@ -1,9 +1,9 @@
 package uz.prestige.livewater.constructor.view_model
 
+import uz.prestige.livewater.constructor.type.DeviceType
 import android.util.Log
 import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.constructor.type.ConstructorType
-import uz.prestige.livewater.constructor.type.DeviceType
 import uz.prestige.livewater.constructor.type.RegionType
 import uz.prestige.livewater.network.ApiService
 import uz.prestige.livewater.network.Network

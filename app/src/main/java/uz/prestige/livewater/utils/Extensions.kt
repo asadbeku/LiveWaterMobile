@@ -1,6 +1,5 @@
 package uz.prestige.livewater.utils
 
-import uz.prestige.livewater.constructor.type.DeviceType
 import android.content.Context
 import android.net.Uri
 import android.util.Base64
@@ -18,21 +17,26 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import uz.prestige.livewater.constructor.type.ConstructorType
-import uz.prestige.livewater.constructor.type.RegionType
-import uz.prestige.livewater.constructor.type.secondary.DeviceSecondaryType
-import uz.prestige.livewater.constructor.type.secondary.RegionSecondaryType
-import uz.prestige.livewater.constructor.type.secondary.SecondaryConstructor
-import uz.prestige.livewater.device.type.OwnerType
-import uz.prestige.livewater.device.type.secondary_type.OwnerSecondaryType
-import uz.prestige.livewater.home.types.LastUpdateType
-import uz.prestige.livewater.home.types.test.LastUpdateSecondaryType
-import uz.prestige.livewater.route.types.BaseDataType
-import uz.prestige.livewater.route.types.RouteType
-import uz.prestige.livewater.route.types.secondary.BaseDataByIdSecondaryType
-import uz.prestige.livewater.route.types.secondary.RouteSecondaryType
-import uz.prestige.livewater.users.types.UserType
-import uz.prestige.livewater.users.types.secondary.UserSecondaryType
+import uz.prestige.livewater.dayver.types.LastUpdateTypeDayver
+import uz.prestige.livewater.dayver.types.secondary.LastUpdateDayverSecondaryType
+import uz.prestige.livewater.dayver.users.types.DayverUserType
+import uz.prestige.livewater.dayver.users.types.secondary.DayverUserSecondaryType
+import uz.prestige.livewater.level.constructor.type.ConstructorType
+import uz.prestige.livewater.level.constructor.type.DeviceType
+import uz.prestige.livewater.level.constructor.type.RegionType
+import uz.prestige.livewater.level.constructor.type.secondary.DeviceSecondaryType
+import uz.prestige.livewater.level.constructor.type.secondary.RegionSecondaryType
+import uz.prestige.livewater.level.constructor.type.secondary.SecondaryConstructor
+import uz.prestige.livewater.level.device.type.OwnerType
+import uz.prestige.livewater.level.device.type.secondary_type.OwnerSecondaryType
+import uz.prestige.livewater.level.home.types.LastUpdateType
+import uz.prestige.livewater.level.home.types.test.LastUpdateSecondaryType
+import uz.prestige.livewater.level.route.types.BaseDataType
+import uz.prestige.livewater.level.route.types.RouteType
+import uz.prestige.livewater.level.route.types.secondary.BaseDataByIdSecondaryType
+import uz.prestige.livewater.level.route.types.secondary.RouteSecondaryType
+import uz.prestige.livewater.level.users.types.UserType
+import uz.prestige.livewater.level.users.types.secondary.UserSecondaryType
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -154,6 +158,19 @@ fun OwnerSecondaryType.convertOwnerSecondaryToOwnerType(): List<OwnerType> {
     }
 }
 
+fun uz.prestige.livewater.dayver.device.type.secondary_type.OwnerSecondaryType.convertDayverOwnerSecondaryToOwnerType(): List<uz.prestige.livewater.dayver.device.type.OwnerType> {
+    return this@convertDayverOwnerSecondaryToOwnerType.data.map { data ->
+        uz.prestige.livewater.dayver.device.type.OwnerType(
+            id = data.id,
+            firstName = data.first_name,
+            lastName = data.last_name,
+            region = data.region,
+            role = data.role,
+            username = data.username
+        )
+    }
+}
+
 fun Uri.createPartFromUri(context: Context): MultipartBody.Part {
     // Get the content resolver from the context
     val contentResolver = context.contentResolver
@@ -217,6 +234,22 @@ fun LastUpdateSecondaryType.convertTestTypeToLastUpdates(): List<LastUpdateType>
     }
 }
 
+fun LastUpdateDayverSecondaryType.convertSecondaryToPrimary(): List<LastUpdateTypeDayver> {
+    return this.mapIndexed { index, data ->
+        LastUpdateTypeDayver(
+            id = data.id,
+            serial = data.device.serie,
+            numbering = (index + 1).toString(),
+            level = data.level.toString(),
+            salinity = data.salinity.toString(),
+            temperature = data.temperature.toString(),
+            signal = data.signal == "good",
+            time = data.dateInMs.toString(),
+            name = data.device.name
+        )
+    }
+}
+
 fun String.getExpiredDateInMills(): Long {
 
     // Decode the JWT token to get the expiration time
@@ -247,7 +280,26 @@ fun UserSecondaryType.convertToUserType(): List<UserType> {
             username = data.username,
             role = data.role,
             regionId = data.region,
-            phoneNumber = data.mobil_phone,
+            phoneNumber = data.mobil_phone ?: "",
+            createdAt = data.created_at.convertToMillis(),
+            updatedAt = data.updated_at.convertToMillis(),
+            devicesCount = data.devices.size
+        )
+    }
+
+}
+
+fun DayverUserSecondaryType.convertToUserType(): List<DayverUserType> {
+
+    return this@convertToUserType.data.mapIndexed { index, data ->
+        DayverUserType(
+            id = data._id,
+            numbering = (index + 1),
+            firstName = data.first_name,
+            lastName = data.last_name,
+            username = data.username,
+            role = data.role,
+            regionId = data.region,
             createdAt = data.created_at.convertToMillis(),
             updatedAt = data.updated_at.convertToMillis(),
             devicesCount = data.devices.size

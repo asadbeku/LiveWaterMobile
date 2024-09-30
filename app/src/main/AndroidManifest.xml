@@ -20,14 +20,14 @@
         <profileable android:shell="true" />
 
         <activity
-            android:name=".test.TestDeviceActivity"
+            android:name=".level.test.TestDeviceActivity"
             android:exported="false"
             android:theme="@style/Theme.LiveWater" />
         <activity
-            android:name=".map.MapActivity"
+            android:name=".level.map.MapActivity"
             android:exported="true" />
         <activity
-            android:name=".login.LoginActivity"
+            android:name=".auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,16 +36,26 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".users.AddUserActivity"
+            android:name=".level.users.AddUserActivity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true" />
         <activity
-            android:name=".device.add_device.AddNewDeviceActivity"
+            android:name=".level.device.add_device.AddNewDeviceActivity"
             android:exported="true" />
         <activity
-            android:name=".regions.RegionsActivity"
+            android:name=".dayver.users.AddUserActivity"
+            android:exported="true" />
+        <activity
+            android:name=".dayver.device.add_device.AddNewDeviceActivity"
+            android:exported="true" />
+        <activity android:name=".dayver.regions.DayverRegionsActivity"
+            android:exported="true" />
+        <activity android:name=".dayver.map.MapActivity"
+            android:exported="true" />
+        <activity
+            android:name=".level.regions.RegionsActivity"
             android:exported="true" />
 
         <meta-data

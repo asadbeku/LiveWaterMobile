@@ -31,7 +31,7 @@
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topAppBar"
-        tools:listitem="@layout/item_last_info" />
+        tools:listitem="@layout/item_users" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"

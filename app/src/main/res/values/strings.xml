@@ -81,5 +81,6 @@
     <string name="enter_region_name">Hudud nomini kiriting</string>
     <string name="device_is_not_registered_from_backend">Bunday qurilma hali backend tomonidan ro\'yxatga olinmagan!</string>
     <string name="type_device_serial_number">Qurilma seriya raqamini kiriting</string>
+    <string name="dayver">Dayver</string>
 
 </resources>

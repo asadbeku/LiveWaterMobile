@@ -3,10 +3,9 @@ package uz.prestige.livewater.utils
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import uz.prestige.livewater.constructor.type.ConstructorType
-import uz.prestige.livewater.home.types.LastUpdateType
-import uz.prestige.livewater.network.ApiService
-import uz.prestige.livewater.network.Network
+import uz.prestige.livewater.level.constructor.type.ConstructorType
+import uz.prestige.livewater.level.network.ApiService
+import uz.prestige.livewater.level.network.NetworkLevel
 
 class ConstructorPagingSource(
     private val startTime: String,
@@ -28,7 +27,7 @@ class ConstructorPagingSource(
             val limit = 10
 
             val response = when {
-                regionId == "all" && deviceSerial == "all" -> Network.buildService(ApiService::class.java)
+                regionId == "all" && deviceSerial == "all" -> NetworkLevel.buildService(ApiService::class.java)
                     .getConstructorByNone(
                         offset = page,
                         limit = limit,
@@ -36,7 +35,7 @@ class ConstructorPagingSource(
                         end = endTime
                     )
 
-                regionId == "all" && deviceSerial != "all" -> Network.buildService(ApiService::class.java)
+                regionId == "all" && deviceSerial != "all" -> NetworkLevel.buildService(ApiService::class.java)
                     .getConstructorByDeviceSerial(
                         offset = page,
                         limit = limit,
@@ -45,7 +44,7 @@ class ConstructorPagingSource(
                         device = deviceSerial
                     )
 
-                regionId != "all" && deviceSerial == "all" -> Network.buildService(ApiService::class.java)
+                regionId != "all" && deviceSerial == "all" -> NetworkLevel.buildService(ApiService::class.java)
                     .getConstructorByRegion(
                         offset = page,
                         limit = limit,
@@ -54,7 +53,7 @@ class ConstructorPagingSource(
                         region = regionId
                     )
 
-                else -> Network.buildService(ApiService::class.java).getConstructor(
+                else -> NetworkLevel.buildService(ApiService::class.java).getConstructor(
                     offset = page,
                     limit = limit,
                     start = startTime,

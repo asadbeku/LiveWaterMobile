@@ -30,12 +30,4 @@
 
     </style>
 
-    <style name="Widget.App.Toolbar.Surface" parent="Widget.Material3.Toolbar.Surface">
-        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Surface</item>
-    </style>
-
-    <style name="ThemeOverlay.App.Toolbar.Surface" parent="ThemeOverlay.Material3.Toolbar.Surface">
-        <item name="elevationOverlayEnabled">false</item>
-    </style>
-
 </resources>

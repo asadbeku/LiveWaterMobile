@@ -6,7 +6,7 @@
     android:id="@+id/testDeviceMainContainer"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".test.TestDeviceActivity">
+    tools:context=".level.test.TestDeviceActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"

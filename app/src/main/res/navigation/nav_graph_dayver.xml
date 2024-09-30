@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_dayver"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="uz.prestige.livewater.dayver.home.DayverHomeFragment"
+        android:label="DayverHomeFragment" />
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="uz.prestige.livewater.dayver.users.UserFragment"
+        android:label="UserFragment" />
+    <fragment
+        android:id="@+id/constructorFragment"
+        android:name="uz.prestige.livewater.level.constructor.ConstructorFragment"
+        android:label="ConstructorFragment" />
+    <fragment
+        android:id="@+id/deviceFragment"
+        android:name="uz.prestige.livewater.dayver.device.DayverDeviceFragment"
+        android:label="DeviceFragment" />
+    <fragment
+        android:id="@+id/routeFragment"
+        android:name="uz.prestige.livewater.level.route.RouteFragment"
+        android:label="RouteFragment" />
+</navigation>

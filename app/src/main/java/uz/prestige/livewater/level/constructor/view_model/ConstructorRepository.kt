@@ -80,7 +80,7 @@ class ConstructorRepository {
     }
 
     suspend fun getDevicesSerialByRegion(regionId: String) = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getDevices(limit = 100)
+        val response = NetworkLevel.buildService(ApiService::class.java).getDevices(offset = 0,limit = 100)
 
         devicesList = response.body()!!.convertDeviceSecondaryToDeviceType()
 

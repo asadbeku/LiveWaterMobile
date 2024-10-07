@@ -5,7 +5,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ItemRouteBinding
-import uz.prestige.livewater.level.route.types.BaseDataType
 import uz.prestige.livewater.utils.toFormattedDate
 import uz.prestige.livewater.utils.toFormattedTime
 
@@ -25,25 +24,24 @@ abstract class RouteBaseHolder(view: View, private val onClicked: (position: Int
 
         binding.time.text = date.toFormattedTime()
         binding.date.text = date.toFormattedDate()
-
         binding.privateKey.text = privateKey
     }
 
     private fun setupSignalTypeIcon(statusCode: Int, message: String) {
-        val signalIcon = R.drawable.icon_circle
+        val (iconResId, tintColorResId) = getIconAndColor(statusCode)
 
-        binding.statusCode.text = "Status code: $statusCode"
-        binding.statusCircle.setImageResource(signalIcon)
-
-        val tintColor = ContextCompat.getColor(
-            itemView.context,
-            if (statusCode == 200) R.color.greenPrimary else R.color.redPrimary
-        )
-
+        binding.statusCircle.setImageResource(iconResId)
+        val tintColor = ContextCompat.getColor(itemView.context, tintColorResId)
         binding.statusCircle.setColorFilter(tintColor)
 
         binding.message.setTextColor(tintColor)
         binding.message.text = message
     }
 
+    private fun getIconAndColor(statusCode: Int): Pair<Int, Int> {
+        return when (statusCode) {
+            200 -> R.drawable.icon_circle to R.color.greenPrimary
+            else -> R.drawable.icon_circle to R.color.redPrimary // Default or other status codes
+        }
+    }
 }

@@ -8,8 +8,13 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import uz.prestige.livewater.ActivityAbout
 import uz.prestige.livewater.R
 import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.home.types.DeviceStatuses
@@ -20,8 +25,6 @@ import uz.prestige.livewater.databinding.FragmentLevelHomeBinding
 import uz.prestige.livewater.level.home.adapter.LastUpdatesAdapter
 
 class HomeFragment : Fragment(R.layout.fragment_level_home) {
-
-    private val TAG = "HomeFragment"
 
     private var _binding: FragmentLevelHomeBinding? = null
     private val binding get() = _binding!!
@@ -40,40 +43,37 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        observeViewModel()  // Set up observers before data retrieval
         setupUI()
-        observeViewModel()
-
-        binding.toolbar.menu
-
-        binding.toolbar.setOnMenuItemClickListener { menuItem ->
-            // Handle menu item clicks
-            when (menuItem.itemId) {
-                R.id.exit -> {
-                    TokenManager.clearToken(requireContext())
-
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
-                    startActivity(intent)
-                    requireActivity().finish()
-                    true
-                }
-                // Add more cases for other menu items if needed
-                else -> false
-            }
-        }
     }
 
     private fun setupUI() {
         setStatusBarColor()
+        initToolbar()
         initLastUpdateRecyclerView()
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.getDevicesStatusesAndLastUpdates()
-            binding.swipeRefresh.isRefreshing = false
+            refreshData()
+        }
+    }
+
+    private fun initToolbar() {
+        binding.toolbar.apply {
+            title = "Asosiy - Level"
+            setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.exit -> handleExit()
+                    R.id.about -> navigateToAbout()
+                    else -> false
+                }
+            }
         }
     }
 
     private fun initLastUpdateRecyclerView() {
-        lastUpdateAdapter = LastUpdatesAdapter()
+        lifecycleScope.launch {
+            lastUpdateAdapter = LastUpdatesAdapter()
+        }
 
         with(binding.lastUpdateRecycler) {
             adapter = lastUpdateAdapter
@@ -88,12 +88,7 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
         requireActivity().window.decorView.systemUiVisibility = 0
     }
 
-    private fun showError(error: String) {
-        Snackbar.make(requireView(), "Error: $error", Snackbar.LENGTH_LONG).show()
-    }
-
     private fun observeViewModel() {
-        viewModel.getDevicesStatusesAndLastUpdates()
 
         viewModel.deviceStatuses.observe(viewLifecycleOwner) { devicesStatuses ->
             updateDeviceStatusUI(devicesStatuses)
@@ -105,11 +100,39 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
 
         viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
             updateUpdatingTextVisibility(isUpdating)
+            if (!isUpdating) {
+                binding.swipeRefresh.isRefreshing = false  // Stop refreshing when done
+            }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) {
-            showError(it)
+        viewModel.error.observe(viewLifecycleOwner) { error ->
+            showError(error)
         }
+
+        // Fetch data after setting up observers
+        refreshData()
+
+
+    }
+
+    private fun refreshData() {
+        viewModel.getDevicesStatusesAndLastUpdates()
+    }
+
+    private fun handleExit(): Boolean {
+        TokenManager.clearToken(requireContext())
+        startActivity(Intent(requireContext(), LoginActivity::class.java))
+        requireActivity().finish()
+        return true
+    }
+
+    private fun navigateToAbout(): Boolean {
+        startActivity(Intent(requireContext(), ActivityAbout::class.java))
+        return true
+    }
+
+    private fun showError(error: String) {
+        Snackbar.make(requireView(), "Error: $error", Snackbar.LENGTH_LONG).show()
     }
 
     private fun updateDeviceStatusUI(devicesStatuses: DeviceStatuses) {
@@ -121,21 +144,17 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
     }
 
     private fun updateLastUpdateRecyclerView(updatingList: List<LastUpdateType>) {
-        lastUpdateAdapter?.items = updatingList
+        val listFirst10 = updatingList.subList(0, 10)
+        lastUpdateAdapter?.items = listFirst10  // Use DiffUtil for efficient updates
         lastUpdateAdapter?.notifyDataSetChanged()
     }
 
     private fun updateUpdatingTextVisibility(isUpdating: Boolean) {
-        if (isUpdating) {
-            binding.shimmerHorizontalContainers.visibility = View.VISIBLE
-            binding.shimmerRecycler.visibility = View.VISIBLE
-            binding.lastUpdateRecycler.visibility = View.GONE
-            binding.horizontalContainers.visibility = View.GONE
-        } else {
-            binding.shimmerHorizontalContainers.visibility = View.GONE
-            binding.shimmerRecycler.visibility = View.GONE
-            binding.lastUpdateRecycler.visibility = View.VISIBLE
-            binding.horizontalContainers.visibility = View.VISIBLE
+        with(binding) {
+            shimmerHorizontalContainers.visibility = if (isUpdating) View.VISIBLE else View.GONE
+            shimmerRecycler.visibility = if (isUpdating) View.VISIBLE else View.GONE
+            lastUpdateRecycler.visibility = if (isUpdating) View.GONE else View.VISIBLE
+            horizontalContainers.visibility = if (isUpdating) View.GONE else View.VISIBLE
         }
     }
 

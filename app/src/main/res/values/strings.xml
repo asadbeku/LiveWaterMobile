@@ -35,6 +35,10 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="example_text">www.example.com/example</string>
+    <string name="reroute_button">Qayta yo\'naltirish</string>
+    <string name="reroute_button_desc">For rerouting button</string>
+    <string name="route_title">Yo\'naltirish</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

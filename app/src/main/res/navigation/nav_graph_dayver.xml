@@ -14,7 +14,7 @@
         android:label="UserFragment" />
     <fragment
         android:id="@+id/constructorFragment"
-        android:name="uz.prestige.livewater.level.constructor.ConstructorFragment"
+        android:name="uz.prestige.livewater.dayver.constructor.ConstructorFragment"
         android:label="ConstructorFragment" />
     <fragment
         android:id="@+id/deviceFragment"
@@ -22,6 +22,6 @@
         android:label="DeviceFragment" />
     <fragment
         android:id="@+id/routeFragment"
-        android:name="uz.prestige.livewater.level.route.RouteFragment"
+        android:name="uz.prestige.livewater.dayver.route.DayverRouteFragment"
         android:label="RouteFragment" />
 </navigation>

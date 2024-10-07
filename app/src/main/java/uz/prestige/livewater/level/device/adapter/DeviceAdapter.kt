@@ -18,7 +18,7 @@ class DeviceAdapter(onClicked: (position: Int) -> Unit) :
     }
 
     init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, DeviceDelegate(onClicked))
+//        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, DevicePagingAdapter(onClicked))
     }
 
     class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<DeviceType>() {

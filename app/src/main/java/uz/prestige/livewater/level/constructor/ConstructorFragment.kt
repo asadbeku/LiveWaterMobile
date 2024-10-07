@@ -1,5 +1,6 @@
 package uz.prestige.livewater.level.constructor
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -100,9 +102,63 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     ) {
         lifecycleScope.launch {
             viewModel.fetchConstructorData(startTime, endTime, regionId, deviceId)
-                .flowOn(Dispatchers.IO).collectLatest {
+                .flowOn(Dispatchers.IO).collectLatest { pagingData ->
+
+                    constructorAdapter?.let { adapter ->
+                        adapter.addLoadStateListener { loadState ->
+                            when (loadState.source.refresh) {
+                                is LoadState.Error -> {
+                                    val errorState = loadState.source.refresh as LoadState.Error
+                                    Log.d(
+                                        "ConstructorFragment",
+                                        "Error: ${errorState.error.message}"
+                                    )
+                                    showErrorState()
+                                }
+
+                                is LoadState.Loading -> {
+                                    Log.d("ConstructorFragment", "Loading")
+                                    showLoadingState()
+                                }
+
+                                is LoadState.NotLoading -> {
+                                    Log.d("ConstructorFragment", "Loaded")
+                                    showContentState()
+                                }
+                            }
+                        }
+                        adapter.submitData(pagingData)
+                    }
+
 //                constructorAdapter?.submitData(it)
-            }
+                }
+        }
+    }
+
+    private fun showLoadingState() {
+        with(binding) {
+            shimmerRecycler.visibility = View.VISIBLE
+            shimmerRecycler.startShimmer()
+            emptyTextView.visibility = View.GONE
+            constructorRecyclerView.visibility = View.GONE
+        }
+    }
+
+    private fun showErrorState() {
+        with(binding) {
+            emptyTextView.visibility = View.VISIBLE
+            constructorRecyclerView.visibility = View.GONE
+            shimmerRecycler.visibility = View.GONE
+            shimmerRecycler.stopShimmer()
+        }
+    }
+
+    private fun showContentState() {
+        with(binding) {
+            emptyTextView.visibility = View.GONE
+            constructorRecyclerView.visibility = View.VISIBLE
+            shimmerRecycler.visibility = View.GONE
+            shimmerRecycler.stopShimmer()
         }
     }
 
@@ -111,6 +167,7 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
         _binding = null
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onApply(
         startTime: String,
         endTime: String,

@@ -55,4 +55,22 @@ class LoginViewModel : ViewModel() {
                 }
         }
     }
+
+    fun isTokenValid(applicationContext: Context) {
+        viewModelScope.launch {
+            repo.checkBearer(applicationContext)
+                .catch {
+                    Log.e(TAG, "checkAuth: $it")
+                    _error.postValue(UiState.Error(it.message.toString()))
+                }
+                .flowOn(Dispatchers.IO)
+                .collect {
+                    if (it.success && it.statusCode == 200) {
+                        _error.postValue(UiState.Success(it.message))
+                    } else{
+                        _error.postValue(UiState.Error(it.message))
+                    }
+                }
+        }
+    }
 }

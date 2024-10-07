@@ -50,12 +50,17 @@
         <activity
             android:name=".dayver.device.add_device.AddNewDeviceActivity"
             android:exported="true" />
-        <activity android:name=".dayver.regions.DayverRegionsActivity"
+        <activity
+            android:name=".dayver.regions.DayverRegionsActivity"
             android:exported="true" />
-        <activity android:name=".dayver.map.MapActivity"
+        <activity
+            android:name=".dayver.map.MapActivity"
             android:exported="true" />
         <activity
             android:name=".level.regions.RegionsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ActivityAbout"
             android:exported="true" />
 
         <meta-data

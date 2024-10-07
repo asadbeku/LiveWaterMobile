@@ -41,7 +41,6 @@ object NetworkDayver {
         }
         .build()
 
-
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://back1.livewater.uz/")
         .addConverterFactory(GsonConverterFactory.create())

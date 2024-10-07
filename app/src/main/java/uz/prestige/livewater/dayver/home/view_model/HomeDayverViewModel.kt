@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 import uz.prestige.livewater.dayver.types.LastUpdateTypeDayver
 import uz.prestige.livewater.level.home.types.DeviceStatuses
 import uz.prestige.livewater.level.home.types.LastUpdateType
@@ -38,40 +39,37 @@ class HomeDayverViewModel : ViewModel() {
 
     fun getDevicesStatusesAndLastUpdates() {
         viewModelScope.launch {
-
             try {
                 updatingState.postValue(true)
 
-                val lastUpdatesResult = async {
-                    repository.getLastUpdates()
-                        .catch { e ->
-                            handleError(e, "getLastUpdates")
-                        }
-                        .flowOn(Dispatchers.IO)
-                        .firstOrNull()
-                }
+                // Fetch lastUpdates and wait until completed
+                val lastUpdates = repository.getLastUpdates()
+                    .catch { e -> handleError(e, "getLastUpdates") }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull() ?: emptyList()
 
-                val devicesStatusesResult = async {
-                    repository.getDevicesStatusesFlow()
-                        .catch { e ->
-                            handleError(e, "getDevicesStatusesFlow")
-                        }
-                        .flowOn(Dispatchers.IO)
-                        .firstOrNull()
-                }
+                // Update LiveData for lastUpdates
+                _lastUpdatesList.postValue(lastUpdates)
 
-                _devicesStatuses.postValue(devicesStatusesResult.await() ?: DeviceStatuses("0", "0", "0"))
-                _lastUpdatesList.postValue(lastUpdatesResult.await() ?: emptyList())
+                // Fetch deviceStatuses only after lastUpdates are done
+                val deviceStatuses = repository.getDevicesStatusesFlow()
+                    .catch { e -> handleError(e, "getDevicesStatusesFlow") }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull() ?: DeviceStatuses("0", "0", "0")
+
+                // Post deviceStatuses LiveData
+                _devicesStatuses.postValue(deviceStatuses)
+
             } finally {
-                delay(1.seconds)
                 updatingState.postValue(false)
             }
         }
     }
 
-    private fun handleError(e: Throwable, functionName: String) {
-        _error.postValue(e.toString())
-        Log.e("HomeViewModel", "$functionName: $e")
-    }
 
+
+    private fun handleError(e: Throwable, functionName: String) {
+        _error.postValue(e.message ?: "Unknown error")
+        Log.e("HomeDayverViewModel", "$functionName: $e")
+    }
 }

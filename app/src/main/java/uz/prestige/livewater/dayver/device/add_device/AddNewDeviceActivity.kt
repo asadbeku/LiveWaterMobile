@@ -1,6 +1,5 @@
 package uz.prestige.livewater.dayver.device.add_device
 
-import AddDeviceViewModel
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,7 +15,7 @@ import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityAddDeviceBinding
 import uz.prestige.livewater.dayver.device.UiState
 import uz.prestige.livewater.dayver.device.type.DeviceDataPassType
-import uz.prestige.livewater.level.constructor.type.DeviceType
+import uz.prestige.livewater.dayver.constructor.type.DeviceType
 
 class AddNewDeviceActivity : AppCompatActivity() {
 

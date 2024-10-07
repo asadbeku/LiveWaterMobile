@@ -34,29 +34,26 @@ class HomeViewModel : ViewModel() {
     fun getDevicesStatusesAndLastUpdates() {
         viewModelScope.launch {
             try {
-                repository.crashTest()
                 updatingState.postValue(true)
 
-                val lastUpdatesResult = async {
-                    repository.getLastUpdates()
-                        .catch { e ->
-                            handleError(e, "getLastUpdates")
-                        }
-                        .flowOn(Dispatchers.IO)
-                        .firstOrNull()
-                }
+                // Fetch lastUpdates and wait until completed
+                val lastUpdates = repository.getLastUpdates()
+                    .catch { e -> handleError(e, "getLastUpdates") }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull() ?: emptyList()
 
-                val devicesStatusesResult = async {
-                    repository.getDevicesStatusesFlow()
-                        .catch { e ->
-                            handleError(e, "getDevicesStatusesFlow")
-                        }
-                        .flowOn(Dispatchers.IO)
-                        .firstOrNull()
-                }
+                // Update LiveData for lastUpdates
+                _lastUpdatesList.postValue(lastUpdates)
 
-                _devicesStatuses.postValue(devicesStatusesResult.await() ?: DeviceStatuses("0", "0", "0"))
-                _lastUpdatesList.postValue(lastUpdatesResult.await() ?: emptyList())
+                // Fetch deviceStatuses only after lastUpdates are done
+                val deviceStatuses = repository.getDevicesStatusesFlow()
+                    .catch { e -> handleError(e, "getDevicesStatusesFlow") }
+                    .flowOn(Dispatchers.IO)
+                    .firstOrNull() ?: DeviceStatuses("0", "0", "0")
+
+                // Post deviceStatuses LiveData
+                _devicesStatuses.postValue(deviceStatuses)
+
             } finally {
                 updatingState.postValue(false)
             }

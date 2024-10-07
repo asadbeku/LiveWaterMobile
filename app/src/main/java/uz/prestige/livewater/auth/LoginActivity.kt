@@ -27,6 +27,7 @@ class LoginActivity : AppCompatActivity() {
     private val viewModel: LoginViewModel by viewModels()
     private var accountType = "level"
     private var textToAnimate: String = ""
+    private var animator: ValueAnimator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,18 +39,26 @@ class LoginActivity : AppCompatActivity() {
 
         setupObservers()
         setupLoginButton()
+        checkToken()
 
         binding.test.setOnClickListener {
             lifecycleScope.launch {
-                val response = NetworkLevel.buildService(ApiService::class.java)
+                val responseLevel = NetworkLevel.buildService(ApiService::class.java)
                     .isValidToken()
+                val responseDayver =
+                    NetworkDayver.buildService(ApiService::class.java).isValidToken()
 
-                Log.d("checkBearer", "Network: ${response.body()}")
+                Log.d("checkBearer", "Network: ${responseLevel.body()}")
+                Log.d("checkBearer", "Network: ${responseDayver.body()}")
             }
         }
         binding.changeAccountButton.setOnClickListener {
             changeAccountType()
         }
+    }
+
+    private fun checkToken() {
+        viewModel.isTokenValid(applicationContext)
     }
 
     private fun changeAccountType() {
@@ -70,13 +79,15 @@ class LoginActivity : AppCompatActivity() {
     private fun animateText(text: String) {
         textToAnimate = text
 
-        val animator = ValueAnimator.ofInt(0, textToAnimate.length)
-        animator.duration = 1000
-        animator.addUpdateListener { animation ->
+        animator?.let { it.cancel() }
+
+        animator = ValueAnimator.ofInt(0, textToAnimate.length)
+        animator?.duration = 1000
+        animator?.addUpdateListener { animation ->
             val animatedValue = animation.animatedValue as Int
             binding.appNameTextView.text = textToAnimate.substring(0, animatedValue)
         }
-        animator.start()
+        animator?.start()
     }
 
     private fun setupObservers() {
@@ -156,8 +167,11 @@ class LoginActivity : AppCompatActivity() {
             msg = "Login successful!"
             navigateToMainActivity()
         } else msg =
-            "Incorrect username or password!"
+            "Username yoki parol xato!"
 
+        if (state.message == "unsuccessful") {
+            msg = "Token eskirgan"
+        }
 
         Snackbar.make(
             binding.mainContainer,

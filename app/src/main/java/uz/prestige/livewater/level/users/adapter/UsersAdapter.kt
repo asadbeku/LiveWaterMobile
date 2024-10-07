@@ -2,7 +2,6 @@ package uz.prestige.livewater.level.users.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
-import uz.prestige.livewater.level.users.adapter.UsersDelegate
 import uz.prestige.livewater.level.users.types.UserType
 
 class UsersAdapter(onClicked: (position: Int) -> Unit) :
@@ -13,7 +12,7 @@ class UsersAdapter(onClicked: (position: Int) -> Unit) :
     }
 
     init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, UsersDelegate(onClicked))
+//        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, UsersDelegate(onClicked))
     }
 
     class RouteDiffutilsCallBack : DiffUtil.ItemCallback<UserType>() {
@@ -30,7 +29,5 @@ class UsersAdapter(onClicked: (position: Int) -> Unit) :
         ): Boolean {
             return oldItem== newItem
         }
-
-
     }
 }

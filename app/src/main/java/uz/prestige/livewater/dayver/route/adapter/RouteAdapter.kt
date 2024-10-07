@@ -2,18 +2,17 @@ package uz.prestige.livewater.dayver.route.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
-import uz.prestige.livewater.level.route.types.BaseDataType
-import uz.prestige.livewater.level.route.types.RouteType
+import uz.prestige.livewater.dayver.route.types.RouteType
 
 class RouteAdapter(onClicked: (position: Int) -> Unit) :
     AsyncListDifferDelegationAdapter<RouteType>(RouteDiffutilsCallBack()) {
 
     companion object {
-        private const val LAST_UPDATE_DELEGATE_ID = 1
+        private const val ROUTE_DELEGATE_ID = 1 // Changed for clarity
     }
 
     init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, RouteDelegate(onClicked))
+//        delegatesManager.addDelegate(ROUTE_DELEGATE_ID, RoutePagingAdapter(onClicked))
     }
 
     class RouteDiffutilsCallBack : DiffUtil.ItemCallback<RouteType>() {
@@ -21,6 +20,7 @@ class RouteAdapter(onClicked: (position: Int) -> Unit) :
             oldItem: RouteType,
             newItem: RouteType
         ): Boolean {
+            // Compare unique identifiers for items
             return oldItem.id == newItem.id
         }
 
@@ -28,9 +28,8 @@ class RouteAdapter(onClicked: (position: Int) -> Unit) :
             oldItem: RouteType,
             newItem: RouteType
         ): Boolean {
-            return oldItem::class == newItem::class
+            // Compare relevant fields for content equality
+            return oldItem == newItem // Ensure RouteType has proper equals() implementation
         }
-
-
     }
 }

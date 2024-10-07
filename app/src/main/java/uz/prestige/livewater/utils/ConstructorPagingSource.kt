@@ -11,7 +11,8 @@ class ConstructorPagingSource(
     private val startTime: String,
     private val endTime: String,
     private val regionId: String,
-    private val deviceSerial: String
+    private val deviceSerial: String,
+    private val limit: Int = 10  // Limit is now dynamic with a default value of 10
 ) : PagingSource<Int, ConstructorType>() {
 
     override fun getRefreshKey(state: PagingState<Int, ConstructorType>): Int? {
@@ -24,8 +25,8 @@ class ConstructorPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ConstructorType> {
         return try {
             val page: Int = params.key ?: 0
-            val limit = 10
 
+            // Determine which API call to make based on regionId and deviceSerial
             val response = when {
                 regionId == "all" && deviceSerial == "all" -> NetworkLevel.buildService(ApiService::class.java)
                     .getConstructorByNone(
@@ -63,17 +64,27 @@ class ConstructorPagingSource(
                 )
             }
 
+            // Check for successful response and non-empty data
             if (response.isSuccessful && response.body() != null) {
-                LoadResult.Page(
-                    data = response.body()!!.convertSecondaryTypeToConstructorType(),
-                    prevKey = if (page == 0) null else (page - 1),
-                    nextKey = if (page > response.body()!!.limit) null else (page + 1)
-                )
+                val responseData = response.body()!!.data
+                if (responseData.isNotEmpty()) {
+                    LoadResult.Page(
+                        data = response.body()!!.convertSecondaryTypeToConstructorType(),
+                        prevKey = if (page == 0) null else page - 1,
+                        nextKey = if (responseData.size < limit) null else page + 1
+                    )
+                } else {
+                    LoadResult.Error(Exception("Empty data returned"))
+                }
             } else {
-                LoadResult.Error(throw Exception("No Response"))
+                LoadResult.Error(Exception("Error: ${response.code()} - ${response.message()}"))
             }
         } catch (e: Exception) {
-            Log.e("LoadData", "Error loading data", e)
+            Log.e(
+                "DayverPagingSource",
+                "Error loading data. Params: page=$params.key, startTime=$startTime, endTime=$endTime, regionId=$regionId, deviceSerial=$deviceSerial",
+                e
+            )
             LoadResult.Error(e)
         }
     }

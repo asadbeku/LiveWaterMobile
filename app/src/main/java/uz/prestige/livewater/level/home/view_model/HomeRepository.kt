@@ -1,37 +1,43 @@
 package uz.prestige.livewater.level.home.view_model
 
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.home.types.DeviceStatuses
+import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.network.ApiService
 import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.convertTestTypeToLastUpdates
 
 class HomeRepository {
-    private var all = "null"
-    private var active = "null"
+    private var globalList: List<LastUpdateType> = emptyList()
 
     suspend fun getDevicesStatusesFlow(): Flow<DeviceStatuses> = flow {
-        val active = active
-        val inActive = (all.toInt() - active.toInt()).toString()
-        val all = all
-        emit(DeviceStatuses(all, active, inActive))
+        val activeCount = globalList.count { it.signal }
+        val totalCount = globalList.size
+        val inactiveCount = totalCount - activeCount
+
+        Log.d("HomeDayverRepository", "Device Statuses - Active: $activeCount, Inactive: $inactiveCount, Total: $totalCount")
+
+        emit(DeviceStatuses(all = totalCount.toString(), active = activeCount.toString(), inActive = inactiveCount.toString()))
     }
 
     suspend fun getLastUpdates(): Flow<List<LastUpdateType>> = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getLastUpdate()
-        val list = response.body()?.convertTestTypeToLastUpdates() ?: emptyList()
+        try {
+            val response = NetworkLevel.buildService(ApiService::class.java).getLastUpdate()
 
-        val counter = list.count { it.signal }
+            if (response.isSuccessful) {
+                globalList = response.body()?.convertTestTypeToLastUpdates() ?: emptyList()
+                Log.d("HomeDayverRepository", "Received updates: $globalList")
+                emit(globalList)
+            } else {
+                Log.e("HomeDayverRepository", "Error fetching updates: ${response.errorBody()}")
+                emit(emptyList())
+            }
 
-        active = counter.toString()
-        all = list.size.toString()
-
-        emit(list)
-    }
-
-    suspend fun crashTest(){
-        val response = NetworkLevel.buildService(ApiService::class.java).getLastUpdate()
+        } catch (e: Exception) {
+            Log.e("HomeDayverRepository", "Exception fetching updates: ${e.message}")
+            emit(emptyList())
+        }
     }
 }

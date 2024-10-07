@@ -20,6 +20,7 @@ import org.json.JSONObject
 import uz.prestige.livewater.dayver.types.LastUpdateTypeDayver
 import uz.prestige.livewater.dayver.types.secondary.LastUpdateDayverSecondaryType
 import uz.prestige.livewater.dayver.users.types.DayverUserType
+import uz.prestige.livewater.dayver.users.types.UserDayverSecondaryType
 import uz.prestige.livewater.dayver.users.types.secondary.DayverUserSecondaryType
 import uz.prestige.livewater.level.constructor.type.ConstructorType
 import uz.prestige.livewater.level.constructor.type.DeviceType
@@ -27,6 +28,7 @@ import uz.prestige.livewater.level.constructor.type.RegionType
 import uz.prestige.livewater.level.constructor.type.secondary.DeviceSecondaryType
 import uz.prestige.livewater.level.constructor.type.secondary.RegionSecondaryType
 import uz.prestige.livewater.level.constructor.type.secondary.SecondaryConstructor
+import uz.prestige.livewater.level.device.type.DeviceResponseSecondaryType
 import uz.prestige.livewater.level.device.type.OwnerType
 import uz.prestige.livewater.level.device.type.secondary_type.OwnerSecondaryType
 import uz.prestige.livewater.level.home.types.LastUpdateType
@@ -35,7 +37,9 @@ import uz.prestige.livewater.level.route.types.BaseDataType
 import uz.prestige.livewater.level.route.types.RouteType
 import uz.prestige.livewater.level.route.types.secondary.BaseDataByIdSecondaryType
 import uz.prestige.livewater.level.route.types.secondary.RouteSecondaryType
+import uz.prestige.livewater.level.users.types.UserResponseSecondaryDataType
 import uz.prestige.livewater.level.users.types.UserType
+import uz.prestige.livewater.level.users.types.secondary.Data
 import uz.prestige.livewater.level.users.types.secondary.UserSecondaryType
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
@@ -70,6 +74,26 @@ fun DeviceSecondaryType.convertDeviceSecondaryToDeviceType(): List<DeviceType> {
     var counter = 1
     return this@convertDeviceSecondaryToDeviceType.data.map { data ->
         DeviceType(
+            id = data._id,
+            numbering = counter,
+            serialNumber = data.serie,
+            regionId = data.region._id,
+            regionName = data.region.name,
+            devicePrivateKey = data.device_privet_key,
+            long = data.long.toString(),
+            lat = data.lat.toString(),
+            ownerName = data.owner?.first_name + " " + data.owner?.last_name,
+            createdAt = data.created_at,
+            objectName = data.name,
+            isWorking = data.isWorking
+        ).also { counter++ }
+    }
+}
+
+fun uz.prestige.livewater.dayver.constructor.type.secondary.DeviceSecondaryType.convertDayverDeviceSecondaryToDeviceType(): List<uz.prestige.livewater.dayver.constructor.type.DeviceType> {
+    var counter = 1
+    return this@convertDayverDeviceSecondaryToDeviceType.data.map { data ->
+        uz.prestige.livewater.dayver.constructor.type.DeviceType(
             id = data._id,
             numbering = counter,
             serialNumber = data.serie,
@@ -126,10 +150,61 @@ fun RegionSecondaryType.convertRegionSecondaryToRegionType(): List<RegionType> {
     }
 }
 
+fun DeviceResponseSecondaryType.convertToDeviceType(): DeviceType {
+
+    return DeviceType(
+        id = id,
+        serialNumber = serie,
+        numbering = 1,
+        regionId = region.id,
+        regionName = region.name,
+        devicePrivateKey = devicePrivetKey,
+        long = long.toString(),
+        lat = lat.toString(),
+        ownerName = owner.firstName + " " + owner.lastName,
+        createdAt = createdAt,
+        objectName = name,
+        isWorking = isWorking
+    )
+}
+
+fun uz.prestige.livewater.dayver.constructor.type.secondary.RegionSecondaryType.convertDayverRegionSecondaryToRegionType(): List<uz.prestige.livewater.dayver.constructor.type.RegionType> {
+
+    var counter = 1
+
+    return this@convertDayverRegionSecondaryToRegionType.data.map { data ->
+        uz.prestige.livewater.dayver.constructor.type.RegionType(
+            id = data._id,
+            name = data.name,
+            deviceCount = data.devicesCount,
+            numbering = counter
+        ).also { counter++ }
+    }
+}
+
 fun SecondaryConstructor.convertSecondaryTypeToConstructorType(): List<ConstructorType> {
     var counter = 1
     val convertedList = this@convertSecondaryTypeToConstructorType.data.map { data ->
         ConstructorType(
+            id = data._id,
+            serie = data.device.serie,
+            numbering = counter.toString(),
+            level = data.level.toString(),
+            preassur = data.pressure.toString(),
+            volume = data.volume.toString(),
+            signal = if (data.signal == "good") true else false,
+            dateInMillisecond = data.date_in_ms.toString(),
+            regionId = ""
+        ).also { counter++ }
+    }
+
+    return convertedList
+}
+
+fun uz.prestige.livewater.dayver.constructor.type.secondary.SecondaryConstructor.convertDayverSecondaryTypeToConstructorType(): List<uz.prestige.livewater.dayver.constructor.type.ConstructorType> {
+    var counter = 1
+    val convertedList = this@convertDayverSecondaryTypeToConstructorType.data.map { data ->
+        uz.prestige.livewater.dayver.constructor.type.ConstructorType(
             id = data._id,
             serie = data.device.serie,
             numbering = counter.toString(),
@@ -203,6 +278,49 @@ fun RouteSecondaryType.convertToRouteType(): List<RouteType> {
     }
 }
 
+fun uz.prestige.livewater.dayver.route.types.secondary.RouteSecondaryType.convertToDayverRouteType(): List<uz.prestige.livewater.dayver.route.types.RouteType> {
+    return this@convertToDayverRouteType.data.map {
+        uz.prestige.livewater.dayver.route.types.RouteType(
+            id = it._id,
+            date = it.send_data_in_ms,
+            privateKey = it.device_privet_key,
+            statusCode = it.status_code,
+            message = it.message,
+            baseDataId = it.basedata
+        )
+    }
+}
+
+fun DayverDeviceSecondaryType.convertToDeviceType(): uz.prestige.livewater.dayver.constructor.type.DeviceType {
+    return uz.prestige.livewater.dayver.constructor.type.DeviceType(
+        id = id,
+        numbering = 1,
+        serialNumber = serie,
+        objectName = name,
+        devicePrivateKey = devicePrivetKey,
+        long = long.toString(),
+        lat = lat.toString(),
+        regionId = region.id,
+        regionName = region.name,
+        ownerName = owner.firstName + " " + owner.lastName,
+        createdAt = createdAt,
+        isWorking = true
+    )
+}
+
+fun RouteSecondaryType.convertToDayverRouteType(): List<uz.prestige.livewater.dayver.route.types.RouteType> {
+    return this@convertToDayverRouteType.data.map { routeData ->
+        uz.prestige.livewater.dayver.route.types.RouteType(
+            id = routeData._id,
+            date = routeData.send_data_in_ms,
+            privateKey = routeData.device_privet_key,
+            statusCode = routeData.status_code,
+            message = routeData.message,
+            baseDataId = routeData.basedata
+        )
+    }
+}
+
 fun BaseDataByIdSecondaryType.convertToBaseDataType(): BaseDataType {
     return this@convertToBaseDataType.let { data ->
         BaseDataType(
@@ -210,6 +328,20 @@ fun BaseDataByIdSecondaryType.convertToBaseDataType(): BaseDataType {
             date = data.date_in_ms,
             level = data.level,
             volume = data.volume
+        )
+    }
+}
+
+fun uz.prestige.livewater.dayver.route.types.secondary.BaseDataByIdSecondaryType.convertToDayverBaseDataType(): uz.prestige.livewater.dayver.route.types.BaseDataType {
+    return this@convertToDayverBaseDataType.let { data ->
+        uz.prestige.livewater.dayver.route.types.BaseDataType(
+            id = data._id,
+            date = data.date_in_ms,
+            level = data.level,
+            salinity = data.salinity,
+            temperature = data.temperature,
+            signal = data.signal,
+            device = data.device
         )
     }
 }
@@ -289,6 +421,27 @@ fun UserSecondaryType.convertToUserType(): List<UserType> {
 
 }
 
+fun UserResponseSecondaryDataType.convertToUserType(): UserType {
+    return UserType(
+        id = id,
+        numbering = 1,
+        firstName = firstName,
+        lastName = lastName,
+        username = username,
+        role = role,
+        regionId = region,
+        phoneNumber = mobilPhone ?: "",
+        createdAt = createdAt.convertToMillis(),
+        updatedAt = updatedAt.convertToMillis(),
+        devicesCount = devices.size
+    )
+}
+
+fun Long.convertMillisToDateTime(): String {
+    val formatter = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+    return formatter.format(Date(this))
+}
+
 fun DayverUserSecondaryType.convertToUserType(): List<DayverUserType> {
 
     return this@convertToUserType.data.mapIndexed { index, data ->
@@ -308,8 +461,23 @@ fun DayverUserSecondaryType.convertToUserType(): List<DayverUserType> {
 
 }
 
+fun UserDayverSecondaryType.convertToUserType(): DayverUserType {
+    return DayverUserType(
+        id = id,
+        numbering = 1,
+        firstName = firstName,
+        lastName = lastName,
+        username = username,
+        role = role,
+        regionId = region,
+        createdAt = createdAt.convertToMillis(),
+        updatedAt = updatedAt.convertToMillis(),
+        devicesCount = devices.size
+    )
+}
+
 fun String.convertToMillis(): Long {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     return try {
         val date = dateFormat.parse(this@convertToMillis)

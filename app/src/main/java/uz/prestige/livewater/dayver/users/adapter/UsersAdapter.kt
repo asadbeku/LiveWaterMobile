@@ -12,7 +12,7 @@ class UsersAdapter(onClicked: (position: Int) -> Unit) :
     }
 
     init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, UsersDelegate(onClicked))
+//        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, UsersPagingAdapter(onClicked))
     }
 
     class RouteDiffutilsCallBack : DiffUtil.ItemCallback<DayverUserType>() {
@@ -29,7 +29,5 @@ class UsersAdapter(onClicked: (position: Int) -> Unit) :
         ): Boolean {
             return oldItem== newItem
         }
-
-
     }
 }

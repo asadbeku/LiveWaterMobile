@@ -5,7 +5,7 @@ import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
 import uz.prestige.livewater.level.constructor.type.DeviceType
 
 class DeviceAdapter(onClicked: (position: Int) -> Unit) :
-    AsyncListDifferDelegationAdapter<DeviceType>(LastUpdateDiffutilsCallBack()) {
+    AsyncListDifferDelegationAdapter<uz.prestige.livewater.dayver.constructor.type.DeviceType>(LastUpdateDiffutilsCallBack()) {
 
     var oldList: List<DeviceType> = listOf()
 
@@ -13,26 +13,26 @@ class DeviceAdapter(onClicked: (position: Int) -> Unit) :
         private const val LAST_UPDATE_DELEGATE_ID = 1
     }
 
-    fun submitList(list: List<DeviceType>) {
+    fun submitList(list: List<uz.prestige.livewater.dayver.constructor.type.DeviceType>) {
         items = list
     }
 
     init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, DeviceDelegate(onClicked))
+//        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, DevicePagingAdapter(onClicked))
     }
 
-    class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<DeviceType>() {
+    class LastUpdateDiffutilsCallBack : DiffUtil.ItemCallback<uz.prestige.livewater.dayver.constructor.type.DeviceType>() {
 
         override fun areItemsTheSame(
-            oldItem: DeviceType,
-            newItem: DeviceType
+            oldItem: uz.prestige.livewater.dayver.constructor.type.DeviceType,
+            newItem: uz.prestige.livewater.dayver.constructor.type.DeviceType
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: DeviceType,
-            newItem: DeviceType
+            oldItem: uz.prestige.livewater.dayver.constructor.type.DeviceType,
+            newItem: uz.prestige.livewater.dayver.constructor.type.DeviceType
         ): Boolean {
             return oldItem == newItem
         }

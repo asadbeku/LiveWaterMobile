@@ -1,52 +1,48 @@
 package uz.prestige.livewater.dayver.device.view_model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.constructor.type.DeviceType
-import kotlin.time.Duration.Companion.seconds
+import uz.prestige.livewater.utils.DayverDeviceSourceFactory
 
 class DeviceViewModel : ViewModel() {
 
     private val repository = DeviceRepository()
 
-    private val _updatingState = MutableLiveData<Boolean>()
-    val updatingState: LiveData<Boolean>
-        get() = _updatingState
+    private var _deviceData =
+        MutableLiveData<uz.prestige.livewater.dayver.constructor.type.DeviceType>()
+    val deviceData: LiveData<uz.prestige.livewater.dayver.constructor.type.DeviceType> get() = _deviceData
 
-    private val _devicesList = MutableLiveData<List<DeviceType>>()
-    val devicesList: LiveData<List<DeviceType>>
-        get() = _devicesList
+    fun fetchDevices() = Pager(
+        config = PagingConfig(6),
+        pagingSourceFactory = { DayverDeviceSourceFactory() }
 
+    ).flow.cachedIn(viewModelScope)
 
-    fun getDevices() {
+    fun saveId(id: String) = repository.saveIds(id)
+
+    fun getDeviceIdByPosition(position: Int): String = repository.getDeviceId(position)
+
+    fun getDeviceDataById(id: String) {
         viewModelScope.launch {
-
-            _updatingState.postValue(true)
-
-            repository.getDevicesList()
+            repository.getDeviceById(id)
                 .catch {
-                    Log.e("DeviceViewModel", "$it")
+
                 }
-                .collect {
-                    delay(1.seconds)
-                    _updatingState.postValue(false)
-                    _devicesList.postValue(it)
+                .flowOn(Dispatchers.IO)
+                .collectLatest {
+                    _deviceData.postValue(it)
                 }
         }
-    }
-
-    fun getDeviceDataById(id: String): DeviceType? {
-        return _devicesList.value?.firstOrNull { it.id == id }
-    }
-
-    fun getDeviceId(position: Int): String {
-        return _devicesList.value?.get(position)?.id ?: ""
     }
 
 

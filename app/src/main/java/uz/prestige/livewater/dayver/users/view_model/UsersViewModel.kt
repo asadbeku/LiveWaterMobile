@@ -1,38 +1,50 @@
 package uz.prestige.livewater.dayver.users.view_model
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.dayver.users.types.DayverUserType
+import uz.prestige.livewater.utils.UsersDayverPagingSource
 
 class UsersViewModel : ViewModel() {
 
     private val repository = UsersRepository()
 
-    private var privateUsersList: List<DayverUserType> = listOf()
+    private var _userData = MutableLiveData<DayverUserType>()
+    val userData: LiveData<DayverUserType> get() = _userData
 
-    val usersList: Flow<List<DayverUserType>> = repository.usersList
 
-    fun getUsers() {
+    fun fetchUsers() = Pager(
+        config = PagingConfig(pageSize = 10),
+        pagingSourceFactory = { UsersDayverPagingSource() }
+    ).flow.cachedIn(viewModelScope)
+
+    fun saveUserId(id: String) = repository.saveUserId(id)
+
+    fun getUserId(position: Int): String = repository.getUserId(position)
+    fun getUserDataById(userId: String) {
         viewModelScope.launch {
-            repository.getUsers()
-
-            usersList.collectLatest {
-                privateUsersList = it
-            }
+            repository.getUserDataById(userId)
+                .catch {
+                    Log.e("UserViewModel", "getUserDataById: ${it.message}")
+                }
+                .flowOn(Dispatchers.IO)
+                .collectLatest {
+                    _userData.postValue(it)
+                }
         }
-    }
 
-    fun getDeviceDataById(id: String): DayverUserType? {
-        return privateUsersList.firstOrNull() { it.id == id }
-    }
-
-    fun getDeviceId(position: Int): String {
-        Log.d("userInfo", "getDeviceId: ${privateUsersList[position].id}")
-        return privateUsersList[position].id
     }
 
 }

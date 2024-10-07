@@ -9,5 +9,6 @@ data class BaseDataByIdSecondaryType(
     val pressure: Double,
     val signal: String,
     val updated_at: String,
-    val volume: Double
+    val salinity: Double,
+    val temperature: Double
 )

@@ -12,9 +12,9 @@ class RouteAdapter(onClicked: (position: Int) -> Unit) :
         private const val LAST_UPDATE_DELEGATE_ID = 1
     }
 
-    init {
-        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, RouteDelegate(onClicked))
-    }
+//    init {
+//        delegatesManager.addDelegate(LAST_UPDATE_DELEGATE_ID, RouteDelegate(onClicked))
+//    }
 
     class RouteDiffutilsCallBack : DiffUtil.ItemCallback<RouteType>() {
         override fun areItemsTheSame(

@@ -95,11 +95,21 @@ class LoginRepository {
         }
     }
 
-    suspend fun checkBearer() = flow {
+    suspend fun checkBearer(context: Context) = flow {
+
+        val responseDayver = NetworkDayver.buildService(ApiService::class.java).isValidToken()
+
         val response = NetworkLevel.buildService(ApiService::class.java).isValidToken()
 
-        Log.d("checkBearer", "Network: ${response.body()}")
+        if (responseDayver.isSuccessful && responseDayver.code() == 200) {
+            emit(ValidTokenResponse(responseDayver.isSuccessful, "Success bearer", responseDayver.code()))
+        } else if (response.isSuccessful && response.code() == 200) {
+            emit(ValidTokenResponse(response.isSuccessful, "Success bearer", response.code()))
+        } else {
+            emit(ValidTokenResponse(false, "unsuccessful", response.code()))
+            TokenManager.clearToken(context)
+        }
 
-        emit(response.isSuccessful && response.code() == 200)
+        Log.d("checkBearer", "Network: ${response.body()}")
     }
 }

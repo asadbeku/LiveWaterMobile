@@ -9,33 +9,40 @@ import uz.prestige.livewater.utils.toFormattedTime
 
 abstract class LastUpdateBaseHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-    val binding = ItemLastInfoBinding.bind(view)
+    private val binding = ItemLastInfoBinding.bind(view)
 
-    init {
-
-    }
-
-    fun bind(numbering: String, serial: String,level: String, salinity: String, volume: String, signal: Boolean, time: String, name: String) {
-        binding.numbering.text = numbering
-        binding.deviceObjectName.text = name
-        binding.level.text = level
-        binding.pressure.text = salinity
-        binding.volume.text = volume
-
-        setupSignalTypeIcon(signal)
-
-        binding.time.text = time.toLong().toFormattedTime()
+    fun bind(
+        numbering: String,
+        serial: String,
+        level: String,
+        salinity: String,
+        volume: String,
+        signal: Boolean,
+        time: String,
+        name: String
+    ) {
+        with(binding) {
+            this.numbering.text = numbering
+            deviceObjectName.text = name
+            this.level.text = level
+            pressure.text = salinity
+            this.volume.text = volume
+            this.time.text = time.toLong().toFormattedTime()
+            setupSignalTypeIcon(signal)
+        }
     }
 
     private fun setupSignalTypeIcon(signal: Boolean) {
-        val signalText = if (signal) "Yaxshi" else "Signal yo'q"
-        val signalIcon = if (signal) R.drawable.icon_circle else R.drawable.icon_circle
+        val (signalText, signalIcon, tintColor) = if (signal) {
+            Triple("Yaxshi", R.drawable.icon_circle, R.color.greenPrimary)
+        } else {
+            Triple("Signal yo'q", R.drawable.icon_circle, R.color.redPrimary)
+        }
 
-        binding.signalTypeText.text = signalText
-        binding.signalTypeIcon.setImageResource(signalIcon)
-
-        val tintColor = ContextCompat.getColor(itemView.context, if (signal) R.color.greenPrimary else R.color.redPrimary)
-        binding.signalTypeIcon.setColorFilter(tintColor)
+        with(binding) {
+            signalTypeText.text = signalText
+            signalTypeIcon.setImageResource(signalIcon)
+            signalTypeIcon.setColorFilter(ContextCompat.getColor(itemView.context, tintColor))
+        }
     }
-
 }

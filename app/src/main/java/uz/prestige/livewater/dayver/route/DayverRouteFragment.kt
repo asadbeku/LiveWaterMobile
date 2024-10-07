@@ -1,19 +1,29 @@
 package uz.prestige.livewater.dayver.route
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentRouteBinding
-import uz.prestige.livewater.level.device.UiState
-import uz.prestige.livewater.level.route.adapter.RouteAdapter
-import uz.prestige.livewater.level.route.view_model.RouteViewModel
+import uz.prestige.livewater.dayver.device.UiState
+import uz.prestige.livewater.dayver.route.adapter.RouteAdapter
+import uz.prestige.livewater.dayver.route.adapter.RoutePagingAdapter
+import uz.prestige.livewater.dayver.route.view_model.DayverRouteViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 import uz.prestige.livewater.utils.toFormattedTime
 
@@ -22,8 +32,8 @@ class DayverRouteFragment : Fragment(R.layout.fragment_route) {
     private var _binding: FragmentRouteBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: RouteViewModel by viewModels()
-    private var routeAdapter: RouteAdapter? = null
+    private val viewModel: DayverRouteViewModel by viewModels()
+    private var routeAdapter: RoutePagingAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,13 +46,22 @@ class DayverRouteFragment : Fragment(R.layout.fragment_route) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observers()
+        observers() // Moved up to catch emissions immediately
         setupUI()
+        getRouteData()
+        swipeUp()
     }
 
     private fun setupUI() {
         setStatusBarColor()
         initRouteRecyclerView()
+    }
+
+    private fun swipeUp() {
+        binding.swipeRefresh.setOnRefreshListener {
+            getRouteData()
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun setStatusBarColor() {
@@ -52,9 +71,10 @@ class DayverRouteFragment : Fragment(R.layout.fragment_route) {
     }
 
     private fun initRouteRecyclerView() {
-        viewModel.getRouteList()
-        routeAdapter = RouteAdapter { position ->
-            viewModel.getBaseDataById(position)
+//        viewModel.getRouteList() // Call this after observers are set
+        routeAdapter = RoutePagingAdapter { position ->
+            val id = viewModel.getIdByPosition(position)
+            viewModel.getBaseDataById(id)
         }
 
         with(binding.routeRecycler) {
@@ -64,79 +84,112 @@ class DayverRouteFragment : Fragment(R.layout.fragment_route) {
         }
     }
 
-    private fun observers() {
+    private fun getRouteData() {
+        lifecycleScope.launch {
+            viewModel.fetchRouteList()
+                .catch {
+                    Snackbar.make(binding.swipeRefresh, "$it", Snackbar.LENGTH_LONG).show()
+                }
+                .flowOn(Dispatchers.IO)
+                .collectLatest { pagingData ->
+                    routeAdapter?.addLoadStateListener { loadState ->
+                        when (loadState.source.refresh) {
+                            is LoadState.Error -> {
+                                val errorState = loadState.source.refresh as LoadState.Error
+                                Log.d(
+                                    "RouteFragment",
+                                    "Error: ${errorState.error.message}"
+                                )
+                                showErrorState()
+                            }
 
-        viewModel.routeList.observe(viewLifecycleOwner) {
-            routeAdapter?.items = it
+                            is LoadState.Loading -> {
+                                Log.d("RouteFragment", "Loading")
+                                showLoadingState()
+                            }
+
+                            is LoadState.NotLoading -> {
+                                Log.d("RouteFragment", "Loaded")
+                                showContentState()
+                            }
+                        }
+                    }
+                    routeAdapter?.submitData(pagingData.map {
+                        viewModel.saveId(it.baseDataId)
+                        it
+                    })
+                }
         }
 
-        viewModel.updatingState.observe(viewLifecycleOwner) {
-            viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
-                if (isUpdating) {
-                    binding.routeRecycler.visibility = View.GONE
-                    binding.routeShimmer.visibility = View.VISIBLE
-                } else {
-                    binding.routeRecycler.visibility = View.VISIBLE
-                    binding.routeShimmer.visibility = View.GONE
-                }
-            }
+
+    }
+
+    private fun showLoadingState() {
+        with(binding) {
+            routeShimmer.visibility = View.VISIBLE
+            routeShimmer.startShimmer()
+            emptyTextView.visibility = View.GONE
+            routeRecycler.visibility = View.GONE
+        }
+    }
+
+    private fun showErrorState() {
+        with(binding) {
+            emptyTextView.visibility = View.VISIBLE
+            routeRecycler.visibility = View.GONE
+            routeShimmer.visibility = View.GONE
+            routeShimmer.stopShimmer()
+        }
+    }
+
+    private fun showContentState() {
+        with(binding) {
+            emptyTextView.visibility = View.GONE
+            routeRecycler.visibility = View.VISIBLE
+            routeShimmer.visibility = View.GONE
+            routeShimmer.stopShimmer()
+        }
+    }
+
+    private fun observers() {
+
+
+        viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
+            binding.routeRecycler.visibility = if (isUpdating) View.GONE else View.VISIBLE
+            binding.routeShimmer.visibility = if (isUpdating) View.VISIBLE else View.GONE
         }
 
         viewModel.updatingStateById.observe(viewLifecycleOwner) {
-            Snackbar.make(requireView(), "Yuklanmoqda...", 16000).show()
+            Snackbar.make(requireView(), "Yuklanmoqda...", Snackbar.LENGTH_INDEFINITE).show()
         }
 
-        viewModel.baseDataById.observe(viewLifecycleOwner) {
-            val snackBar = Snackbar.make(
-                requireView(),
-                "Level: ${it.level}, Volume: ${it.volume}, Date:${it.date.toFormattedTime()} ${it.date.toFormattedDate()}",
-                7000
-            )
-            snackBar.setAction("Yopish") {
-                snackBar.dismiss()
-            }.show()
+        viewModel.baseDataById.observe(viewLifecycleOwner) { baseData ->
+            val snackBarMessage =
+                "Level: ${baseData.level}, Salinity: ${baseData.salinity}, Temperature: ${baseData.temperature}, Date: ${baseData.date.toFormattedTime()} ${baseData.date.toFormattedDate()}"
+            val snackBar = Snackbar.make(requireView(), snackBarMessage, Snackbar.LENGTH_SHORT)
+            snackBar.setAction("Yopish") { snackBar.dismiss() }.show()
         }
 
         viewModel.error.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is UiState.Error -> {
-                    context?.let {
-                        Snackbar.make(
-                            requireView(),
-                            state.message,
-                            Snackbar.LENGTH_LONG
-                        ).setBackgroundTint(it.getColor(R.color.redPrimary)).show()
-                    }
-                }
-
-                is UiState.None -> {
-                    context?.let {
-                        Snackbar.make(
-                            requireView(),
-                            "Nomalum xabar",
-                            Snackbar.LENGTH_SHORT
-                        ).setBackgroundTint(it.getColor(R.color.darkGray)).show()
-                    }
-                }
-
-                else -> {
-                    context?.let {
-                        Snackbar.make(
-                            requireView(),
-                            "Muvofaqiyatli",
-                            Snackbar.LENGTH_SHORT
-                        ).setBackgroundTint(it.getColor(R.color.greenPrimary)).show()
-                    }
-                }
+            val message = when (state) {
+                is UiState.Error -> state.message
+                is UiState.None -> "Nomalum xabar"
+                else -> "Muvofaqiyatli"
             }
+            val backgroundColor = when (state) {
+                is UiState.Error -> R.color.redPrimary
+                is UiState.None -> R.color.darkGray
+                else -> R.color.greenPrimary
+            }
+            Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(requireContext().getColor(backgroundColor))
+                .show()
         }
-
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
+    override fun onDestroyView() {
+        super.onDestroyView()
         _binding = null
     }
-
 }
+

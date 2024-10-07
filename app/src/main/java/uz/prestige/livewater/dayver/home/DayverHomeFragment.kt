@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import uz.prestige.livewater.ActivityAbout
 import uz.prestige.livewater.R
 import uz.prestige.livewater.auth.LoginActivity
 import uz.prestige.livewater.auth.TokenManager
@@ -81,9 +82,19 @@ class DayverHomeFragment : Fragment(R.layout.fragment_dayver_home) {
                     requireActivity().finish()
                     true
                 }
+
+                R.id.about -> {
+                    val intent = Intent(requireContext(), ActivityAbout::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                    true
+                }
+
                 else -> false
             }
         }
+
+        binding.toolbar.title = "Asosiy - Dayver"
     }
 
     private fun observeViewModel() {

@@ -10,15 +10,18 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentUserBinding
-import uz.prestige.livewater.dayver.users.adapter.UsersAdapter
+import uz.prestige.livewater.dayver.users.adapter.UsersPagingAdapter
 import uz.prestige.livewater.dayver.users.types.DayverUserType
 import uz.prestige.livewater.dayver.users.view_model.UsersViewModel
 
@@ -28,7 +31,7 @@ class UserFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: UsersViewModel by viewModels()
 
-    private var userAdapter: UsersAdapter? = null
+    private var userAdapter: UsersPagingAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -44,12 +47,17 @@ class UserFragment : Fragment() {
         initUsersRecycler()
         observers()
         bindUiState()
+        getUsers()
     }
 
     private fun bindUiState() {
         binding.addUserButton.setOnClickListener {
             val intent = Intent(requireContext(), AddUserActivity::class.java)
             startActivity(intent)
+        }
+        binding.swipeRefresh.setOnRefreshListener {
+            getUsers()
+            binding.swipeRefresh.isRefreshing = false
         }
     }
 
@@ -58,28 +66,23 @@ class UserFragment : Fragment() {
         requireActivity().window.decorView.systemUiVisibility = 0
     }
 
-    private fun changeUser(position: Int) {
-        val id = viewModel.getDeviceId(position)
-        Log.d("userInfo", "changeUser: $id")
-        val userInfo: DayverUserType = viewModel.getDeviceDataById(id)!!
+    private fun changeUser(userInfo: DayverUserType) {
         Log.d("userInfo", "changeUser: $userInfo")
         val intent = Intent(requireContext(), AddUserActivity::class.java)
 
-        // Create a bundle to pass data to the activity
         val bundle = Bundle()
-        bundle.putParcelable("userInfo", userInfo) // Assuming uz.prestige.livewater.constructor.type.DeviceType is Parcelable
-
-        // Put the bundle into the intent
+        bundle.putParcelable(
+            "userInfo",
+            userInfo
+        )
         intent.putExtra("bundle", bundle)
-
-        // Start the activity
         startActivity(intent)
     }
 
     private fun initUsersRecycler() {
-        userAdapter = UsersAdapter {
-            showMessage("Pressed: $it", R.color.greenPrimary)
-            changeUser(it)
+        userAdapter = UsersPagingAdapter {
+            val userId = viewModel.getUserId(it)
+            viewModel.getUserDataById(userId)
         }
 
         with(binding.usersRecycler) {
@@ -94,23 +97,70 @@ class UserFragment : Fragment() {
         ).setBackgroundTint(getColor(requireContext(), color)).show()
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewModel.getUsers()
-
-    }
-
-    private fun observers() {
-//        viewModel.getUsers()
+    private fun getUsers() {
         lifecycleScope.launch {
-            viewModel.usersList
+            viewModel.fetchUsers()
                 .catch {
                     showMessage("Problem: ${it.message}", R.color.redPrimary)
                 }
                 .flowOn(Dispatchers.IO)
-                .collect {
-                    userAdapter?.items = it
+                .collectLatest {
+
+                    userAdapter?.addLoadStateListener { loadState ->
+                        when (loadState.source.refresh) {
+                            is LoadState.Loading -> {
+                                showLoadingState()
+                            }
+
+                            is LoadState.Error -> {
+                                val errorState = loadState.source.refresh as LoadState.Error
+                                showErrorState(errorState.error.message.toString())
+                            }
+
+                            is LoadState.NotLoading -> {
+                                showContentState()
+                            }
+                        }
+                    }
+
+                    userAdapter?.submitData(
+                        it.map { userInfo ->
+                            viewModel.saveUserId(userInfo.id)
+                            userInfo
+                        }
+                    )
                 }
+        }
+    }
+
+    private fun showLoadingState() {
+        binding.shimmerRecycler.apply {
+            visibility = View.VISIBLE
+            startShimmer()
+        }
+        binding.emptyTextView.visibility = View.GONE
+        binding.usersRecycler.visibility = View.GONE
+    }
+
+    private fun showErrorState(message: String) {
+        binding.shimmerRecycler.stopShimmer()
+        binding.shimmerRecycler.visibility = View.GONE
+        binding.emptyTextView.visibility = View.VISIBLE
+        binding.usersRecycler.visibility = View.GONE
+
+        Snackbar.make(binding.swipeRefresh, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun showContentState() {
+        binding.shimmerRecycler.stopShimmer()
+        binding.shimmerRecycler.visibility = View.GONE
+        binding.emptyTextView.visibility = View.GONE
+        binding.usersRecycler.visibility = View.VISIBLE
+    }
+
+    private fun observers() {
+        viewModel.userData.observe(viewLifecycleOwner) {
+            changeUser(it)
         }
 
     }

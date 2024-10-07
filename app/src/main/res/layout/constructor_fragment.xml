@@ -83,7 +83,7 @@
         <LinearLayout
             android:id="@+id/mainContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -103,9 +103,21 @@
                 android:id="@+id/constructorRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="visible"
                 android:layout_marginBottom="12dp"
                 tools:itemCount="7"
                 tools:listitem="@layout/item_constructor" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/emptyTextView"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/noto_sans_bold"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="Ma'lumot topilmadi"
+                android:textSize="16sp" />
 
         </LinearLayout>
 

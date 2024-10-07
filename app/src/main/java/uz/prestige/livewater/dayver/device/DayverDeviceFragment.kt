@@ -2,31 +2,39 @@ package uz.prestige.livewater.dayver.device
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.DevicesFragmentBinding
 import uz.prestige.livewater.auth.TokenManager
-import uz.prestige.livewater.dayver.device.adapter.DeviceAdapter
+import uz.prestige.livewater.dayver.device.adapter.DevicePagingAdapter
 import uz.prestige.livewater.dayver.device.add_device.AddNewDeviceActivity
 import uz.prestige.livewater.dayver.device.view_model.DeviceViewModel
 import uz.prestige.livewater.dayver.regions.DayverRegionsActivity
 import uz.prestige.livewater.dayver.map.MapActivity
 import uz.prestige.livewater.level.test.TestDeviceActivity
-import uz.prestige.livewater.level.constructor.type.DeviceType
 
 class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
 
     private var _binding: DevicesFragmentBinding? = null
     private val binding get() = _binding!!
     private val viewModel: DeviceViewModel by viewModels()
-    private var deviceAdapter: DeviceAdapter? = null
+    private var deviceAdapter: DevicePagingAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +50,7 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
         setupUI()
         observeViewModel()
         setupAddDeviceButton()
+        getDevice()
     }
 
     private fun setupUI() {
@@ -60,18 +69,20 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
     }
 
     private fun initRecyclerView() {
-        deviceAdapter = DeviceAdapter { position -> changeDevice(position) }
+        deviceAdapter = DevicePagingAdapter { position ->
+            val id = viewModel.getDeviceIdByPosition(position)
+            viewModel.getDeviceDataById(id)
+        }
         binding.deviceRecycler.apply {
             adapter = deviceAdapter
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
         }
-        viewModel.getDevices()
     }
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.getDevices()
+            getDevice()
             binding.swipeRefresh.isRefreshing = false
         }
     }
@@ -95,16 +106,81 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
                 showSnackbar("Menu map is clicked")
                 true
             }
+
             R.id.menuRegion -> {
                 startActivity(Intent(requireContext(), DayverRegionsActivity::class.java))
                 showSnackbar("Regions menu is clicked")
                 true
             }
+
             R.id.testDevice -> {
                 startActivity(Intent(requireContext(), TestDeviceActivity::class.java))
                 true
             }
+
             else -> false
+        }
+    }
+
+    private fun getDevice() {
+        lifecycleScope.launch {
+            viewModel.fetchDevices()
+                .catch {
+                    showSnackbar(it.message.toString())
+                }
+                .flowOn(Dispatchers.IO)
+                .collectLatest { pagingData ->
+                    deviceAdapter?.addLoadStateListener { loadState ->
+                        when (loadState.source.refresh) {
+                            is LoadState.Loading -> {
+                                showLoadingState()
+                            }
+
+                            is LoadState.Error -> {
+                                val errorMessage = loadState.source.refresh as LoadState.Error
+                                showErrorState(errorMessage.error.message.toString())
+                            }
+
+                            is LoadState.NotLoading -> {
+                                showContentState()
+                            }
+                        }
+
+                    }
+                    deviceAdapter?.submitData(pagingData.map {
+                        viewModel.saveId(it.id)
+                        it
+                    })
+                }
+        }
+    }
+
+    private fun showLoadingState() {
+        with(binding) {
+            shimmerRecycler.visibility = View.VISIBLE
+            shimmerRecycler.startShimmer()
+            emptyTextView.visibility = View.GONE
+            deviceRecycler.visibility = View.GONE
+        }
+    }
+
+    private fun showErrorState(message: String) {
+        with(binding) {
+            emptyTextView.visibility = View.VISIBLE
+            deviceRecycler.visibility = View.GONE
+            shimmerRecycler.visibility = View.GONE
+            shimmerRecycler.stopShimmer()
+
+            Log.e("DayverDeviceFragment", message)
+        }
+    }
+
+    private fun showContentState() {
+        with(binding) {
+            emptyTextView.visibility = View.GONE
+            deviceRecycler.visibility = View.VISIBLE
+            shimmerRecycler.visibility = View.GONE
+            shimmerRecycler.stopShimmer()
         }
     }
 
@@ -113,11 +189,12 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
     }
 
     private fun handleAddDeviceButtonVisibility() {
-        binding.addDeviceButton.visibility = if (TokenManager.getRole(requireContext()) == "admin") {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
+        binding.addDeviceButton.visibility =
+            if (TokenManager.getRole(requireContext()) == "admin") {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
     }
 
     private fun setupAddDeviceButton() {
@@ -126,8 +203,8 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
         }
     }
 
-    private fun changeDevice(position: Int) {
-        val deviceInfo: DeviceType = viewModel.getDeviceDataById(viewModel.getDeviceId(position))!!
+    private fun changeDevice(deviceInfo: uz.prestige.livewater.dayver.constructor.type.DeviceType) {
+
         val intent = Intent(requireContext(), AddNewDeviceActivity::class.java).apply {
             putExtra("bundle", Bundle().apply { putParcelable("deviceInfo", deviceInfo) })
         }
@@ -135,11 +212,8 @@ class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
     }
 
     private fun observeViewModel() {
-        viewModel.devicesList.observe(viewLifecycleOwner) {
-            deviceAdapter?.submitList(it)
-        }
-        viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
-            updateView(isUpdating)
+        viewModel.deviceData.observe(viewLifecycleOwner) {
+            changeDevice(it)
         }
     }
 

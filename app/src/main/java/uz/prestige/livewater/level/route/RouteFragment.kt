@@ -1,6 +1,7 @@
 package uz.prestige.livewater.level.route
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,12 +9,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentRouteBinding
+import uz.prestige.livewater.level.constructor.adapter.ConstructorPagingAdapter
 import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.route.adapter.RouteAdapter
+import uz.prestige.livewater.level.route.adapter.RoutePagingAdapter
 import uz.prestige.livewater.level.route.view_model.RouteViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 import uz.prestige.livewater.utils.toFormattedTime
@@ -24,7 +34,7 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
     private val binding get() = _binding!!
 
     private val viewModel: RouteViewModel by viewModels()
-    private var routeAdapter: RouteAdapter? = null
+    private var routeAdapter: RoutePagingAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +49,15 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
         super.onViewCreated(view, savedInstanceState)
         observers()
         setupUI()
+        swipeUp()
+        getRouteData()
+    }
+
+    private fun swipeUp() {
+        binding.swipeRefresh.setOnRefreshListener {
+            getRouteData()
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun setupUI() {
@@ -53,24 +72,17 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
     }
 
     private fun initRouteRecyclerView() {
-        viewModel.getRouteList()
-        routeAdapter = RouteAdapter { position ->
-            viewModel.getBaseDataById(position)
+        this.routeAdapter = RoutePagingAdapter { position ->
+            val id = viewModel.getRouteIdByPosition(position)
+            viewModel.getBaseDataById(id)
         }
-
-        with(binding.routeRecycler) {
-            adapter = routeAdapter
+        binding.routeRecycler.apply {
+            adapter = this@RouteFragment.routeAdapter
             layoutManager = LinearLayoutManager(requireContext())
-            setHasFixedSize(true)
         }
     }
 
     private fun observers() {
-
-        viewModel.routeList.observe(viewLifecycleOwner) {
-            routeAdapter?.items = it
-        }
-
         viewModel.updatingState.observe(viewLifecycleOwner) {
             viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
                 if (isUpdating) {
@@ -132,6 +144,68 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
             }
         }
 
+    }
+
+    private fun getRouteData() {
+        lifecycleScope.launch {
+            viewModel.fetchRouteData().flowOn(Dispatchers.IO).collectLatest { pagingData ->
+                routeAdapter?.let { adapter ->
+                    adapter.addLoadStateListener { loadState ->
+                        when (loadState.source.refresh) {
+                            is LoadState.Error -> {
+                                val errorState = loadState.source.refresh as LoadState.Error
+                                Log.d(
+                                    "RouteFragment",
+                                    "Error: ${errorState.error.message}"
+                                )
+                                showErrorState()
+                            }
+
+                            is LoadState.Loading -> {
+                                Log.d("RouteFragment", "Loading")
+                                showLoadingState()
+                            }
+
+                            is LoadState.NotLoading -> {
+                                Log.d("RouteFragment", "Loaded")
+                                showContentState()
+                            }
+                        }
+                    }
+                    adapter.submitData(pagingData.map {
+                        viewModel.saveRouteId(it.baseDataId)
+                        it
+                    })
+                }
+            }
+        }
+    }
+
+    private fun showLoadingState() {
+        with(binding) {
+            routeShimmer.visibility = View.VISIBLE
+            routeShimmer.startShimmer()
+            emptyTextView.visibility = View.GONE
+            routeRecycler.visibility = View.GONE
+        }
+    }
+
+    private fun showErrorState() {
+        with(binding) {
+            emptyTextView.visibility = View.VISIBLE
+            routeRecycler.visibility = View.GONE
+            routeShimmer.visibility = View.GONE
+            routeShimmer.stopShimmer()
+        }
+    }
+
+    private fun showContentState() {
+        with(binding) {
+            emptyTextView.visibility = View.GONE
+            routeRecycler.visibility = View.VISIBLE
+            routeShimmer.visibility = View.GONE
+            routeShimmer.stopShimmer()
+        }
     }
 
     override fun onDestroy() {

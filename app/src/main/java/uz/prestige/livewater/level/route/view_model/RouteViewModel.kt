@@ -1,10 +1,12 @@
 package uz.prestige.livewater.level.route.view_model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -12,6 +14,7 @@ import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.route.types.BaseDataType
 import uz.prestige.livewater.level.route.types.RouteType
+import uz.prestige.livewater.utils.RouteConfigPagingSource
 
 class RouteViewModel : ViewModel() {
 
@@ -36,25 +39,14 @@ class RouteViewModel : ViewModel() {
     private val _error = MutableLiveData<UiState>()
     val error: LiveData<UiState> get() = _error
 
-    fun getRouteList() {
-        viewModelScope.launch {
-            _updatingState.postValue(true)
-            repository.getRouteListFlow()
-                .catch {
-                    _error.postValue(UiState.Error(it.message.toString()))
-                }
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    _updatingState.postValue(false)
-                    _routeList.postValue(it)
-                }
-        }
-    }
+    fun fetchRouteData() = Pager(
+        config = PagingConfig(pageSize = 6),
+        pagingSourceFactory = {
+            RouteConfigPagingSource()
+        }).flow.cachedIn(viewModelScope)
 
-    fun getBaseDataById(position: Int) {
+    fun getBaseDataById(id: String) {
         viewModelScope.launch {
-
-            val id = _routeList.value?.toList().orEmpty()[position].baseDataId
 
             _updatingStateById.postValue(true)
             repository.getBaseDataById(id)
@@ -68,6 +60,9 @@ class RouteViewModel : ViewModel() {
                 }
         }
     }
+
+    fun getRouteIdByPosition(position: Int): String = repository.getRouteIdByPosition(position)
+    fun saveRouteId(id: String) = repository.saveRouteId(id)
 
 
 }

@@ -13,11 +13,13 @@ import androidx.core.util.Pair
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentFilterBinding
 import uz.prestige.livewater.level.constructor.view_model.FilterViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 
+@AndroidEntryPoint
 class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     internal var fListener: FilterListener? = null
@@ -38,7 +40,6 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
@@ -58,7 +59,7 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun setupClickListeners() {
         binding.applyButton.setOnClickListener {
-            fListener?.onApply(startTime, endTime, deviceId, regionId)
+            fListener?.onApply(startTime, endTime, regionId, deviceId)
             dismiss()
         }
 

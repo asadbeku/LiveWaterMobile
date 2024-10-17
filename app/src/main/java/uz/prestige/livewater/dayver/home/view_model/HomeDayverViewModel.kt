@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -17,11 +18,13 @@ import uz.prestige.livewater.dayver.types.LastUpdateTypeDayver
 import uz.prestige.livewater.level.home.types.DeviceStatuses
 import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.home.view_model.HomeRepository
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-class HomeDayverViewModel : ViewModel() {
-
-    private val repository = HomeDayverRepository()
+@HiltViewModel
+class HomeDayverViewModel @Inject constructor(
+    private val repository: HomeDayverRepository
+) : ViewModel() {
 
     private val _devicesStatuses = MutableLiveData<DeviceStatuses>()
     val deviceStatuses: LiveData<DeviceStatuses>
@@ -65,7 +68,6 @@ class HomeDayverViewModel : ViewModel() {
             }
         }
     }
-
 
 
     private fun handleError(e: Throwable, functionName: String) {

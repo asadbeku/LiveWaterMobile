@@ -5,27 +5,30 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.level.device.UiState
+import javax.inject.Inject
+import uz.prestige.livewater.dayver.constructor.type.RegionType
+import uz.prestige.livewater.utils.UiState
 
-class AddUserViewModel : ViewModel() {
+@HiltViewModel
+class AddUserViewModel @Inject constructor(
+    private val repository: AddUserRepository
+) : ViewModel() {
 
     private val _finish = MutableLiveData<Boolean>()
     val finish get() = _finish
-
-    private val repository = AddUserRepository()
 
     private var regionsList = listOf<RegionType>()
 
     val regionsFlow: Flow<List<RegionType>> = repository.regionsList
 
-    private val _message = MutableLiveData<UiState>()
-    val message: LiveData<UiState> get() = _message
+    private val _message = MutableLiveData<UiState<*>>()
+    val message: LiveData<UiState<*>> get() = _message
 
     fun getRegions() {
         viewModelScope.launch {
@@ -44,8 +47,6 @@ class AddUserViewModel : ViewModel() {
                         _message.postValue(UiState.Success("Added"))
                         delay(1000)
                         _finish.postValue(true)
-                    } else {
-                        _message.postValue(UiState.None)
                     }
 
                 }

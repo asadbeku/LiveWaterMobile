@@ -4,18 +4,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.dayver.device.UiState
+import uz.prestige.livewater.dayver.constructor.type.RegionType
+import uz.prestige.livewater.utils.UiState
+import javax.inject.Inject
 
-class RegionsViewModel : ViewModel() {
-
-    private val repository = RegionsRepository()
+@HiltViewModel
+class RegionsViewModel @Inject constructor(
+    private val repository: RegionsRepository
+) : ViewModel() {
 
     private var _regions = MutableLiveData<List<RegionType>>()
-    private var _message = MutableLiveData<UiState>()
+    private var _message = MutableLiveData<UiState<*>>()
 
     val regionsList get() = _regions
     val message get() = _message

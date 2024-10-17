@@ -13,6 +13,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -20,13 +21,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentRouteBinding
-import uz.prestige.livewater.dayver.device.UiState
-import uz.prestige.livewater.dayver.route.adapter.RouteAdapter
+import uz.prestige.livewater.utils.UiState
 import uz.prestige.livewater.dayver.route.adapter.RoutePagingAdapter
 import uz.prestige.livewater.dayver.route.view_model.DayverRouteViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 import uz.prestige.livewater.utils.toFormattedTime
 
+@AndroidEntryPoint
 class DayverRouteFragment : Fragment(R.layout.fragment_route) {
 
     private var _binding: FragmentRouteBinding? = null
@@ -173,12 +174,10 @@ class DayverRouteFragment : Fragment(R.layout.fragment_route) {
         viewModel.error.observe(viewLifecycleOwner) { state ->
             val message = when (state) {
                 is UiState.Error -> state.message
-                is UiState.None -> "Nomalum xabar"
                 else -> "Muvofaqiyatli"
             }
             val backgroundColor = when (state) {
                 is UiState.Error -> R.color.redPrimary
-                is UiState.None -> R.color.darkGray
                 else -> R.color.greenPrimary
             }
             Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG)

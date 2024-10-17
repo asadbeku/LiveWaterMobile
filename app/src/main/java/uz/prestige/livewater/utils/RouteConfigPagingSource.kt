@@ -6,8 +6,11 @@ import androidx.paging.PagingState
 import uz.prestige.livewater.level.route.types.RouteType
 import uz.prestige.livewater.level.network.ApiService
 import uz.prestige.livewater.level.network.NetworkLevel
+import javax.inject.Inject
 
-class RouteConfigPagingSource : PagingSource<Int, RouteType>() {
+class RouteConfigPagingSource @Inject constructor(
+    private val apiService: ApiService
+) : PagingSource<Int, RouteType>() {
     private val limit: Int = 3  // Default limit
 
     override fun getRefreshKey(state: PagingState<Int, RouteType>): Int? {
@@ -20,7 +23,7 @@ class RouteConfigPagingSource : PagingSource<Int, RouteType>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RouteType> {
         val page = params.key ?: 0
         return try {
-            val response = NetworkLevel.buildService(ApiService::class.java).getRouteData(offset = page, limit = limit)
+            val response = apiService.getRouteData(offset = page, limit = limit)
 
             if (response.isSuccessful) {
                 response.body()?.data?.let { responseData ->

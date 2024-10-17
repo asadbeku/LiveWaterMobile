@@ -5,15 +5,16 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import uz.prestige.livewater.level.constructor.type.ConstructorType
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
 
 class ConstructorPagingSource(
+    private val apiService: ApiService,
     private val startTime: String,
     private val endTime: String,
     private val regionId: String,
-    private val deviceSerial: String,
-    private val limit: Int = 10  // Limit is now dynamic with a default value of 10
+    private val deviceSerial: String
 ) : PagingSource<Int, ConstructorType>() {
+
+    private val limit: Int = 10
 
     override fun getRefreshKey(state: PagingState<Int, ConstructorType>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
@@ -28,33 +29,30 @@ class ConstructorPagingSource(
 
             // Determine which API call to make based on regionId and deviceSerial
             val response = when {
-                regionId == "all" && deviceSerial == "all" -> NetworkLevel.buildService(ApiService::class.java)
-                    .getConstructorByNone(
-                        offset = page,
-                        limit = limit,
-                        start = startTime,
-                        end = endTime
-                    )
+                regionId == "all" && deviceSerial == "all" -> apiService.getConstructorByNone(
+                    offset = page,
+                    limit = limit,
+                    start = startTime,
+                    end = endTime
+                )
 
-                regionId == "all" && deviceSerial != "all" -> NetworkLevel.buildService(ApiService::class.java)
-                    .getConstructorByDeviceSerial(
-                        offset = page,
-                        limit = limit,
-                        start = startTime,
-                        end = endTime,
-                        device = deviceSerial
-                    )
+                regionId == "all" && deviceSerial != "all" -> apiService.getConstructorByDeviceSerial(
+                    offset = page,
+                    limit = limit,
+                    start = startTime,
+                    end = endTime,
+                    device = deviceSerial
+                )
 
-                regionId != "all" && deviceSerial == "all" -> NetworkLevel.buildService(ApiService::class.java)
-                    .getConstructorByRegion(
-                        offset = page,
-                        limit = limit,
-                        start = startTime,
-                        end = endTime,
-                        region = regionId
-                    )
+                regionId != "all" && deviceSerial == "all" -> apiService.getConstructorByRegion(
+                    offset = page,
+                    limit = limit,
+                    start = startTime,
+                    end = endTime,
+                    region = regionId
+                )
 
-                else -> NetworkLevel.buildService(ApiService::class.java).getConstructor(
+                else -> apiService.getConstructor(
                     offset = page,
                     limit = limit,
                     start = startTime,
@@ -88,6 +86,4 @@ class ConstructorPagingSource(
             LoadResult.Error(e)
         }
     }
-
-
 }

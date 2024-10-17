@@ -6,6 +6,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -28,17 +29,25 @@ android {
 
     buildTypes {
 
-        release {
-            isMinifyEnabled = false
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders["applicationLabel"] = "Livewater - debug"
             isDebuggable = true
+            isMinifyEnabled = false
+        }
+
+        release {
+            manifestPlaceholders += mapOf()
+            applicationIdSuffix = ".release"
+            manifestPlaceholders["applicationLabel"] = "Livewater"
+            isMinifyEnabled = false
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
         }
-
-
     }
 
 
@@ -52,6 +61,9 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
@@ -60,10 +72,11 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.benchmark.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 
 
     //Navigation
@@ -115,5 +128,9 @@ dependencies {
 
 //    Yandex map
     implementation(libs.maps.mobile)
+
+    // Dagger Hilt dependencies
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
 
 }

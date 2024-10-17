@@ -14,6 +14,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -29,6 +30,7 @@ import uz.prestige.livewater.dayver.regions.DayverRegionsActivity
 import uz.prestige.livewater.dayver.map.MapActivity
 import uz.prestige.livewater.level.test.TestDeviceActivity
 
+@AndroidEntryPoint
 class DayverDeviceFragment : Fragment(R.layout.devices_fragment) {
 
     private var _binding: DevicesFragmentBinding? = null

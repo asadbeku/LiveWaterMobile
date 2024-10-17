@@ -6,71 +6,47 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.device.UiState
+import uz.prestige.livewater.utils.UiState
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val loginRepository: LoginRepository
+) : ViewModel() {
 
-    private val TAG = "LoginViewModel"
-    private val repo = LoginRepository()
+    private val _updatingState = MutableLiveData<Boolean>()
+    val updatingState: LiveData<Boolean> get() = _updatingState
 
-    private var _status = MutableLiveData<Boolean>()
-    val status: LiveData<Boolean>
-        get() = _status
+    private val _status = MutableLiveData<UiState<*>>()
+    val status: LiveData<UiState<*>> get() = _status
 
-    private var _updatingState = MutableLiveData<Boolean>()
-    val updatingState: LiveData<Boolean>
-        get() = _updatingState
-
-    private val _error = MutableLiveData<UiState>()
-    val error: LiveData<UiState> get() = _error
-
-    fun checkAuth(context: Context, login: String, password: String, accountType: String) {
+    fun checkAuth(login: String, password: String, accountType: String) {
         viewModelScope.launch {
-
-            _updatingState.postValue(true)
-
-            repo.authCheck(context, login, password, accountType)
-                .catch {
-                    Log.e(TAG, "checkAuth: $it")
-                    _updatingState.postValue(false)
-                    _error.postValue(UiState.Error(it.message.toString()))
-                }
+            _updatingState.value = true
+            loginRepository.authCheck(login, password, accountType)
                 .flowOn(Dispatchers.IO)
-                .collect {
-                    when (it) {
-                        "Login" -> {
-                            _updatingState.postValue(false)
-                            _error.postValue(UiState.Success("Login"))
-                        }
-
-                        else -> {
-                            _updatingState.postValue(false)
-                            _error.postValue(UiState.Error("Xatolik yuz berdi!"))
-                        }
-                    }
+                .catch {
+                    _status.postValue(UiState.Error(it.message.toString()))
+                    Log.e("LoginViewModel", "checkAuth: ${it.message}")
+                }
+                .collect { result ->
+                    _updatingState.value = false
+                    _status.postValue(result)
                 }
         }
     }
 
-    fun isTokenValid(applicationContext: Context) {
+    fun isTokenValid() {
         viewModelScope.launch {
-            repo.checkBearer(applicationContext)
-                .catch {
-                    Log.e(TAG, "checkAuth: $it")
-                    _error.postValue(UiState.Error(it.message.toString()))
-                }
+            loginRepository.checkBearer()
                 .flowOn(Dispatchers.IO)
-                .collect {
-                    if (it.success && it.statusCode == 200) {
-                        _error.postValue(UiState.Success(it.message))
-                    } else{
-                        _error.postValue(UiState.Error(it.message))
-                    }
-                }
+                .catch { _status.postValue(UiState.Error(it.message.toString())) }
+                .collect { result -> _status.postValue(result) }
         }
     }
 }

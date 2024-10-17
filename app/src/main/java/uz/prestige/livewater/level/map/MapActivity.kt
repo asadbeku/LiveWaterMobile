@@ -16,11 +16,13 @@ import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.mapkit.user_location.UserLocationLayer
 import com.yandex.runtime.ui_view.ViewProvider
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityMapBinding
 import uz.prestige.livewater.level.map.view_model.MapType
 import uz.prestige.livewater.level.map.view_model.MapViewModel
 
+@AndroidEntryPoint
 class MapActivity : AppCompatActivity() {
 
     private lateinit var mapView: MapView

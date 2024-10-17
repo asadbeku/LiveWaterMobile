@@ -1,16 +1,14 @@
 package uz.prestige.livewater.utils
 
-import androidx.paging.LoadState
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import uz.prestige.livewater.dayver.network.ApiServiceDayver
 import uz.prestige.livewater.dayver.users.types.DayverUserType
-import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkDayver
-import uz.prestige.livewater.level.network.NetworkLevel
-import uz.prestige.livewater.level.users.types.UserType
-import kotlin.reflect.typeOf
+import javax.inject.Inject
 
-class UsersDayverPagingSource : PagingSource<Int, DayverUserType>() {
+class UsersDayverPagingSource @Inject constructor(
+    private val apiService: ApiServiceDayver
+) : PagingSource<Int, DayverUserType>() {
     private val limit: Int = 10  // Default limit
 
     override fun getRefreshKey(state: PagingState<Int, DayverUserType>): Int? {
@@ -24,8 +22,7 @@ class UsersDayverPagingSource : PagingSource<Int, DayverUserType>() {
         val page = params.key ?: 0
 
         return try {
-            val response = NetworkDayver.buildService(ApiService::class.java)
-                .getDayverUsers(offset = page, limit = limit)
+            val response = apiService.getDayverUsers(offset = page, limit = limit)
 
             if (response.isSuccessful) {
                 response.body()?.data?.let { responseData ->

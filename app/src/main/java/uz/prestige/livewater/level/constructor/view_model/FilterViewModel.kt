@@ -4,15 +4,17 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.constructor.type.RegionType
+import javax.inject.Inject
 
-class FilterViewModel : ViewModel() {
-
-    private val repository = ConstructorRepository()
+@HiltViewModel
+class FilterViewModel @Inject constructor(private val repository: ConstructorRepository) :
+    ViewModel() {
     private var _regionsLiveData = MutableLiveData<List<RegionType>>()
     val regionsLiveData get() = _regionsLiveData
 

@@ -9,15 +9,17 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.JsonObject
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityRegionsBinding
 import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.regions.adapter.ButtonClickListener
 import uz.prestige.livewater.level.regions.adapter.RegionNameListener
 import uz.prestige.livewater.level.regions.adapter.RegionsAdapter
 import uz.prestige.livewater.level.regions.view_model.RegionsViewModel
+import uz.prestige.livewater.utils.UiState
 
+@AndroidEntryPoint
 class RegionsActivity : AppCompatActivity(), ButtonClickListener, RegionNameListener {
 
     private lateinit var binding: ActivityRegionsBinding
@@ -65,7 +67,7 @@ class RegionsActivity : AppCompatActivity(), ButtonClickListener, RegionNameList
         viewModel.message.observe(this) { state ->
             val message = when (state) {
                 is UiState.Error -> state.message
-                is UiState.Success -> state.message
+                is UiState.Success -> state.data.toString()
                 else -> getString(R.string.default_message)
             }
 

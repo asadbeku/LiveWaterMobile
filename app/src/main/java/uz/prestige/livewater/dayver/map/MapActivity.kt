@@ -12,11 +12,13 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.ui_view.ViewProvider
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityMapBinding
 import uz.prestige.livewater.dayver.map.view_model.MapType
 import uz.prestige.livewater.dayver.map.view_model.MapViewModel
 
+@AndroidEntryPoint
 class MapActivity : AppCompatActivity() {
 
     // Binding for view elements

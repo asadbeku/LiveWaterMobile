@@ -5,23 +5,28 @@ import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import uz.prestige.livewater.dayver.network.ApiServiceDayver
 import uz.prestige.livewater.level.constructor.type.RegionType
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
+import uz.prestige.livewater.utils.convertDayverRegionSecondaryToRegionType
 import uz.prestige.livewater.utils.convertRegionSecondaryToRegionType
+import javax.inject.Inject
 
-class AddUserRepository {
-
-    private val _regionsList = MutableStateFlow<List<RegionType>>(emptyList())
-    val regionsList: StateFlow<List<RegionType>> = _regionsList
+class AddUserRepository @Inject constructor(
+    private val apiService: ApiServiceDayver
+) {
+    private val _regionsList =
+        MutableStateFlow<List<uz.prestige.livewater.dayver.constructor.type.RegionType>>(emptyList())
+    val regionsList: StateFlow<List<uz.prestige.livewater.dayver.constructor.type.RegionType>> =
+        _regionsList
 
     suspend fun getRegionsFromNetwork() {
 
-        val response = NetworkLevel.buildService(ApiService::class.java).getRegions()
+        val response = apiService.getDayverRegions()
 
         if (response.isSuccessful) {
 
-            val list = response.body()?.convertRegionSecondaryToRegionType()
+            val list = response.body()?.convertDayverRegionSecondaryToRegionType()
 
             list?.let { _regionsList.emit(it) }
         }
@@ -30,7 +35,7 @@ class AddUserRepository {
 
     suspend fun addUser(json: JsonObject) = flow {
 
-        val response = NetworkLevel.buildService(ApiService::class.java).addUser(json)
+        val response = apiService.addUser(json)
 
         if (response.isSuccessful && response.code() == 200 || response.code() == 201) emit(true) else emit(
             false
@@ -39,7 +44,7 @@ class AddUserRepository {
 
     suspend fun changeUser(id: String, userJson: JsonObject) = flow {
         try {
-            val response = NetworkLevel.buildService(ApiService::class.java).updateUser(id, userJson)
+            val response = apiService.updateUser(id, userJson)
 
             if (response.isSuccessful && response.code() == 200 || response.code() == 201) emit(true) else emit(
                 false
@@ -50,7 +55,7 @@ class AddUserRepository {
     }
 
     fun removeUser(id: String) = flow<Boolean> {
-        val response = NetworkLevel.buildService(ApiService::class.java).deleteUser(id)
+        val response = apiService.deleteUser(id)
 
         if (response.isSuccessful && response.code() == 200 || response.code() == 201) emit(true) else emit(
             false

@@ -1,115 +1,174 @@
 package uz.prestige.livewater.auth.view_model
 
+import android.app.Application
 import android.content.Context
+import android.util.Base64
 import android.util.Log
-import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.json.JSONObject
+import retrofit2.Response
 import uz.prestige.livewater.auth.TokenManager
+import uz.prestige.livewater.auth.types.AuthType
+import uz.prestige.livewater.auth.types.DayverAuthSecondaryType
+import uz.prestige.livewater.utils.UiState
+import uz.prestige.livewater.dayver.network.ApiServiceDayver
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkDayver
-import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.getExpiredDateInMills
 import uz.prestige.livewater.utils.getRoleFromJwt
+import javax.inject.Inject
 
-class LoginRepository {
+class LoginRepository @Inject constructor(
+    private val apiServiceLevel: ApiService,
+    private val apiServiceDayver: ApiServiceDayver,
+    private val context: Context
+) {
 
     fun authCheck(
-        context: Context,
         login: String,
         password: String,
         accountType: String
-    ): Flow<String> = flow {
-        emit(
-            when (accountType) {
-                "level" -> authLevel(context, login, password)
-                else -> authDayver(context, login, password)
-            }
-        )
-    }
+    ): Flow<UiState<String>> = flow {
+        emit(UiState.Loading) // Indicate loading state
 
-    private suspend fun authLevel(context: Context, login: String, password: String): String {
-        val response = NetworkLevel.buildService(ApiService::class.java).authCheck(login, password)
-
-        return when {
-            response.isSuccessful && (response.code() == 200 || response.code() == 201) -> {
-                val jsonBody = Gson().toJson(response.body())
-                val jsonObject = JSONObject(jsonBody)
-                val token = jsonObject.optString("token")
-
-                TokenManager.saveToken(
-                    context,
-                    token,
-                    token.getExpiredDateInMills(),
-                    token.getRoleFromJwt()
+        try {
+            val result = when (accountType) {
+                "level" -> authenticate(
+                    login,
+                    password,
+                    apiServiceLevel,
+                    apiServiceDayver,
+                    "level"
                 )
-                TokenManager.setProfileType(context, "level")
 
-                if (TokenManager.getToken(context)?.isNotEmpty() == true) {
-                    "Login"
-                } else {
-                    "unsuccessful"
-                }
+                else -> authenticate(
+                    login,
+                    password,
+                    apiServiceLevel,
+                    apiServiceDayver,
+                    "dayver"
+                )
             }
-
-            response.code() == 401 -> throw Throwable("Login yoki parol xato")
-            response.code() == 400 -> throw Throwable("Parol 8 ta simvoldan kam")
-            else -> "unsuccessful"
+            emit(UiState.Success(result)) // Emit success
+        } catch (e: Exception) {
+            emit(UiState.Error(e.message ?: "An unknown error occurred")) // Emit error
         }
     }
 
-    private suspend fun authDayver(context: Context, login: String, password: String): String {
-        val response = NetworkDayver.buildService(ApiService::class.java).authCheck(login, password)
+    private suspend fun authenticate(
+        login: String,
+        password: String,
+        apiService: ApiService,
+        apiServiceDayver: ApiServiceDayver,
+        profileType: String
+    ): String {
+        val response = if (profileType == "level") apiService.authCheck(
+            login,
+            password
+        ) else apiServiceDayver.authCheck(login, password)
+        return try {
+            return if (response.isSuccessful && (response.code() == 200 || response.code() == 201)) {
 
-        return when {
-            response.isSuccessful && (response.code() == 200 || response.code() == 201) -> {
-                val jsonBody = Gson().toJson(response.body())
-                val jsonObject = JSONObject(jsonBody)
-                val token = jsonObject.optString("token")
+                val token =
+                    if (profileType == "level") {
+                        val data = response as Response<AuthType>
+                        data.body()!!.accsessToken
+                    } else {
+                        val data = response as Response<DayverAuthSecondaryType>
+                        data.body()!!.token
+                    }
+//            val role = token.getRoleFromJwt()
+                val role = if (profileType == "level") getRole(token) else getRoleDayver(token)
+                val expTime = token.getExpiredDateInMills()
 
-                TokenManager.saveToken(
-                    context,
-                    token,
-                    token.getExpiredDateInMills(),
-                    token.getRoleFromJwt()
-                )
-                TokenManager.setProfileType(context, "dayver")
-
-                if (TokenManager.getToken(context)?.isNotEmpty() == true) {
-                    "Login"
-                } else {
-                    "unsuccessful"
-                }
+                Log.d("LoginViewModel", "authenticate - 1: $token, $role, $expTime")
+                if (token.isNullOrEmpty() || role.isNullOrEmpty()) throw Exception("Token is null or empty")
+                TokenManager.saveToken(context, token, expTime, role)
+                Log.d("LoginViewModel", "authenticate - 2: $token")
+                TokenManager.setProfileType(context, profileType)
+                "Login successful"
+            } else {
+                handleAuthError(response)
             }
-
-            response.code() == 401 -> {
-                throw Throwable("Login yoki parol xato")
-            }
-
-            response.code() == 400 -> {
-                throw Throwable("Parol 8 ta simvoldan kam")
-            }
-
-            else -> "unsuccessful"
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
         }
     }
 
-    suspend fun checkBearer(context: Context) = flow {
+    private fun getRole(token: String): String {
+        val payload = token.split(".")[1] // Extract JWT payload
+        val decodedPayload = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_WRAP)
+            .toString(Charsets.UTF_8) // Decode the payload to a string
+        val json = JSONObject(decodedPayload) // Convert to JSON
+        return json.getString("role") // Extract the role
+    }
 
-        val responseDayver = NetworkDayver.buildService(ApiService::class.java).isValidToken()
+    private fun getRoleDayver(token: String): String? {
+        // Check if token is null or empty
+        if (token.isNullOrEmpty()) {
+            return null // Return null or handle appropriately
+        }
 
-        val response = NetworkLevel.buildService(ApiService::class.java).isValidToken()
+        return try {
+            val jwtPayload = token.split(".")[1] // Extract the payload part of the JWT
+            val decodedPayload = Base64.decode(jwtPayload, Base64.URL_SAFE or Base64.NO_WRAP)
+                .toString(Charsets.UTF_8) // Decode the Base64-encoded payload
+            val jsonObject = JSONObject(decodedPayload) // Convert decoded string to JSON
+            val userObject = jsonObject.getJSONObject("user") // Get "user" object
+            userObject.getString("role") // Extract "role" from the user object
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Return null or handle error
+        }
+    }
 
-        if (responseDayver.isSuccessful && responseDayver.code() == 200) {
-            emit(ValidTokenResponse(responseDayver.isSuccessful, "Success bearer", responseDayver.code()))
-        } else if (response.isSuccessful && response.code() == 200) {
-            emit(ValidTokenResponse(response.isSuccessful, "Success bearer", response.code()))
-        } else {
-            emit(ValidTokenResponse(false, "unsuccessful", response.code()))
+    private fun handleAuthError(response: Response<*>): Nothing {
+        val errorMessage = when (response.code()) {
+            401 -> "Incorrect login or password"
+            400 -> "Password must be at least 8 characters"
+            else -> "Authentication failed"
+        }
+        throw Exception(errorMessage)
+    }
+
+    suspend fun checkBearer(): Flow<UiState<ValidTokenResponse>> = flow {
+        emit(UiState.Loading) // Loading state
+
+        try {
+            val responseLevel = apiServiceLevel.isValidToken()
+            val responseDayver = apiServiceDayver.isValidToken()
+
+            // Check Level token first
+            if (responseLevel.isSuccessful && responseLevel.code() == 200) {
+                emit(
+                    UiState.Success(
+                        ValidTokenResponse(
+                            true,
+                            "Valid token",
+                            responseLevel.code()
+                        )
+                    )
+                )
+            } else if (responseDayver.isSuccessful && responseDayver.code() == 200) {
+                emit(
+                    UiState.Success(
+                        ValidTokenResponse(
+                            true,
+                            "Valid token",
+                            responseDayver.code()
+                        )
+                    )
+                )
+            } else {
+                emit(UiState.Error("Invalid token"))
+                TokenManager.clearToken(context)
+            }
+        } catch (e: Exception) {
+            emit(UiState.Error(e.message ?: "Token validation failed"))
             TokenManager.clearToken(context)
         }
-
-        Log.d("checkBearer", "Network: ${response.body()}")
     }
 }
+

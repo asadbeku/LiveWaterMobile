@@ -2,6 +2,7 @@ package uz.prestige.livewater.level.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -24,6 +26,7 @@ import uz.prestige.livewater.auth.TokenManager
 import uz.prestige.livewater.databinding.FragmentLevelHomeBinding
 import uz.prestige.livewater.level.home.adapter.LastUpdatesAdapter
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_level_home) {
 
     private var _binding: FragmentLevelHomeBinding? = null
@@ -95,6 +98,7 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
         }
 
         viewModel.lastUpdatesList.observe(viewLifecycleOwner) { updatingList ->
+            Log.d("HomeFragment", "Updating list: $updatingList")
             updateLastUpdateRecyclerView(updatingList)
         }
 
@@ -144,7 +148,8 @@ class HomeFragment : Fragment(R.layout.fragment_level_home) {
     }
 
     private fun updateLastUpdateRecyclerView(updatingList: List<LastUpdateType>) {
-        val listFirst10 = updatingList.subList(0, 10)
+        val listFirst10 =
+            if (updatingList.isNotEmpty()) updatingList.subList(0, 10) else emptyList()
         lastUpdateAdapter?.items = listFirst10  // Use DiffUtil for efficient updates
         lastUpdateAdapter?.notifyDataSetChanged()
     }

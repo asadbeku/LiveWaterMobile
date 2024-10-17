@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -15,10 +16,13 @@ import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.constructor.type.DeviceType
 import uz.prestige.livewater.utils.LevelDevicePagingSource
 import uz.prestige.livewater.utils.RouteConfigPagingSource
+import javax.inject.Inject
 
-class DeviceViewModel : ViewModel() {
-
-    private val repository = DeviceRepository()
+@HiltViewModel
+class DeviceViewModel @Inject constructor(
+    private val repository: DeviceRepository,
+    private val levelDevicePagingSource: LevelDevicePagingSource
+) : ViewModel() {
 
     private val _updatingState = MutableLiveData<Boolean>()
     val updatingState: LiveData<Boolean> get() = _updatingState
@@ -28,7 +32,7 @@ class DeviceViewModel : ViewModel() {
 
     fun fetchDeviceData() = Pager(
         config = PagingConfig(pageSize = 6),
-        pagingSourceFactory = { LevelDevicePagingSource() }
+        pagingSourceFactory = { levelDevicePagingSource }
     ).flow.cachedIn(viewModelScope)
 
     fun getDeviceDataById(id: String) {

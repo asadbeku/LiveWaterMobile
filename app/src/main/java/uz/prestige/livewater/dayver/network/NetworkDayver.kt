@@ -1,4 +1,4 @@
-package uz.prestige.livewater.level.network
+package uz.prestige.livewater.dayver.network
 
 import android.content.Context
 import okhttp3.OkHttpClient

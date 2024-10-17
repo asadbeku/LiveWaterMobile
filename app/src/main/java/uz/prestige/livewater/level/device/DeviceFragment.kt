@@ -15,6 +15,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -30,7 +31,7 @@ import uz.prestige.livewater.level.device.adapter.DevicePagingAdapter
 import uz.prestige.livewater.level.map.MapActivity
 import uz.prestige.livewater.level.test.TestDeviceActivity
 
-
+@AndroidEntryPoint
 class DeviceFragment : Fragment(R.layout.devices_fragment) {
 
     private var _binding: DevicesFragmentBinding? = null

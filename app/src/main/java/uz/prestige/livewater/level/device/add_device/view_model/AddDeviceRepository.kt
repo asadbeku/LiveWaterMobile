@@ -5,23 +5,25 @@ import android.util.Log
 import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.level.device.type.DeviceDataPassType
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.convertOwnerSecondaryToOwnerType
 import uz.prestige.livewater.utils.convertRegionSecondaryToRegionType
 import uz.prestige.livewater.utils.convertToRequestBody
 import uz.prestige.livewater.utils.createPartFromUri
+import javax.inject.Inject
 
-class AddDeviceRepository {
+class AddDeviceRepository @Inject constructor(
+    private val apiService: ApiService
+) {
 
     // Fetch regions from the network
     fun getRegions() = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getRegions()
+        val response = apiService.getRegions()
         emit(response.body()?.convertRegionSecondaryToRegionType())
     }
 
     // Fetch owners from the network
     fun getOwners() = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getOwners()
+        val response = apiService.getOwners()
         emit(response.body()?.convertOwnerSecondaryToOwnerType())
     }
 
@@ -38,8 +40,7 @@ class AddDeviceRepository {
         val long = DEFAULT_LONGITUDE.convertToRequestBody()
 
         val response = file?.let {
-            NetworkLevel.buildService(ApiService::class.java)
-                .addNewDevice(serie, name, devicePrivateKey, region, owner, lat, long, it)
+            apiService.addNewDevice(serie, name, devicePrivateKey, region, owner, lat, long, it)
         }
 
         response?.let {
@@ -63,21 +64,19 @@ class AddDeviceRepository {
 
         val response = if (device.uri != null) {
             val file = device.uri.createPartFromUri(context)
-            NetworkLevel.buildService(ApiService::class.java)
-                .changeDeviceInfoWithFile(
-                    id,
-                    serie,
-                    name,
-                    devicePrivateKey,
-                    region,
-                    owner,
-                    lat,
-                    long,
-                    file
-                )
+            apiService.changeDeviceInfoWithFile(
+                id,
+                serie,
+                name,
+                devicePrivateKey,
+                region,
+                owner,
+                lat,
+                long,
+                file
+            )
         } else {
-            NetworkLevel.buildService(ApiService::class.java)
-                .changeDeviceInfo(id, serie, name, devicePrivateKey, region, owner, lat, long)
+            apiService.changeDeviceInfo(id, serie, name, devicePrivateKey, region, owner, lat, long)
         }
 
         if (response.isSuccessful) emit(true) else emit(false)

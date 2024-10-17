@@ -1,6 +1,5 @@
 package uz.prestige.livewater.level.device.add_device
 
-import AddDeviceViewModel
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -12,12 +11,15 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityAddDeviceBinding
 import uz.prestige.livewater.level.constructor.type.DeviceType
-import uz.prestige.livewater.level.device.UiState
+import uz.prestige.livewater.level.device.add_device.view_model.AddDeviceViewModel
 import uz.prestige.livewater.level.device.type.DeviceDataPassType
+import uz.prestige.livewater.utils.UiState
 
+@AndroidEntryPoint
 class AddNewDeviceActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddDeviceBinding
@@ -145,7 +147,7 @@ class AddNewDeviceActivity : AppCompatActivity() {
                 is UiState.Success -> {
                     Snackbar.make(
                         binding.addDeviceMainContainer,
-                        state.message,
+                        state.data.toString(),
                         Snackbar.LENGTH_SHORT
                     ).setBackgroundTint(getColor(R.color.greenPrimary)).show()
                 }

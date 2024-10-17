@@ -14,6 +14,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -21,13 +22,14 @@ import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentRouteBinding
 import uz.prestige.livewater.level.constructor.adapter.ConstructorPagingAdapter
-import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.route.adapter.RouteAdapter
 import uz.prestige.livewater.level.route.adapter.RoutePagingAdapter
 import uz.prestige.livewater.level.route.view_model.RouteViewModel
+import uz.prestige.livewater.utils.UiState
 import uz.prestige.livewater.utils.toFormattedDate
 import uz.prestige.livewater.utils.toFormattedTime
 
+@AndroidEntryPoint
 class RouteFragment : Fragment(R.layout.fragment_route) {
 
     private var _binding: FragmentRouteBinding? = null
@@ -122,16 +124,6 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
                     }
                 }
 
-                is UiState.None -> {
-                    context?.let {
-                        Snackbar.make(
-                            requireView(),
-                            "Nomalum xabar",
-                            Snackbar.LENGTH_SHORT
-                        ).setBackgroundTint(it.getColor(R.color.darkGray)).show()
-                    }
-                }
-
                 else -> {
                     context?.let {
                         Snackbar.make(
@@ -210,7 +202,6 @@ class RouteFragment : Fragment(R.layout.fragment_route) {
 
     override fun onDestroy() {
         super.onDestroy()
-
         _binding = null
     }
 

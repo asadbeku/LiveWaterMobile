@@ -15,6 +15,7 @@ import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
+import uz.prestige.livewater.auth.types.AuthType
 import uz.prestige.livewater.dayver.types.secondary.LastUpdateDayverSecondaryType
 import uz.prestige.livewater.dayver.users.types.UserDayverSecondaryType
 import uz.prestige.livewater.dayver.users.types.secondary.DayverUserSecondaryType
@@ -41,7 +42,7 @@ interface ApiService {
     @POST("/auth/login")
     suspend fun authCheck(
         @Field("username") username: String, @Field("password") password: String
-    ): Response<Any>
+    ): Response<AuthType>
 
     @GET("basedata/last-updated")
     suspend fun getLastUpdate(): Response<LastUpdateSecondaryType>
@@ -50,78 +51,42 @@ interface ApiService {
     suspend fun getConstructor(
         @Query("page[limit]") limit: Int,
         @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
+        @Query("filter[start]") start: String = "946666800000",
+        @Query("filter[end]") end: String = "1893438000000",
         @Query("filter[device]") device: String,
         @Query("filter[region]") region: String
     ): Response<SecondaryConstructor>
-
-    @GET("basedata")
-    suspend fun getDayverConstructor(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
-        @Query("filter[device]") device: String,
-        @Query("filter[region]") region: String
-    ): Response<uz.prestige.livewater.dayver.constructor.type.secondary.SecondaryConstructor>
 
     @GET("basedata")
     suspend fun getConstructorByDeviceSerial(
         @Query("page[limit]") limit: Int,
         @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
+        @Query("filter[start]") start: String= "946666800000",
+        @Query("filter[end]") end: String = "1893438000000",
         @Query("filter[device]") device: String
     ): Response<SecondaryConstructor>
-
-    @GET("basedata")
-    suspend fun getDayverConstructorByDeviceSerial(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
-        @Query("filter[device]") device: String
-    ): Response<uz.prestige.livewater.dayver.constructor.type.secondary.SecondaryConstructor>
 
     @GET("basedata")
     suspend fun getConstructorByRegion(
         @Query("page[limit]") limit: Int,
         @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
+        @Query("filter[start]") start: String = "946666800000",
+        @Query("filter[end]") end: String = "1893438000000",
         @Query("filter[region]") region: String
     ): Response<SecondaryConstructor>
-
-    @GET("basedata")
-    suspend fun getDayverConstructorByRegion(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String,
-        @Query("filter[region]") region: String
-    ): Response<uz.prestige.livewater.dayver.constructor.type.secondary.SecondaryConstructor>
 
     @GET("basedata")
     suspend fun getConstructorByNone(
         @Query("page[limit]") limit: Int,
         @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String
+        @Query("filter[start]") start: String = "946666800000",
+        @Query("filter[end]") end: String = "1893438000000"
     ): Response<SecondaryConstructor>
-
-    @GET("basedata")
-    suspend fun getDayverConstructorByNone(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int,
-        @Query("filter[start]") start: String,
-        @Query("filter[end]") end: String
-    ): Response<uz.prestige.livewater.dayver.constructor.type.secondary.SecondaryConstructor>
 
     @GET("regions")
     suspend fun getRegions(): Response<RegionSecondaryType>
 
-    @GET("regions")
+    @GET("regions/")
     suspend fun getDayverRegions(): Response<uz.prestige.livewater.dayver.constructor.type.secondary.RegionSecondaryType>
 
     @GET("devices")
@@ -130,24 +95,8 @@ interface ApiService {
         @Query("page[limit]") limit: Int
     ): Response<DeviceSecondaryType>
 
-    @GET("devices")
-    suspend fun getDevicesByRegion(
-        @Query("page[limit]") limit: Int,
-        @Query("filter[region]") region: String
-    ): Response<DeviceSecondaryType>
-
-    @GET("devices")
-    suspend fun getDayverDevices(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int
-    ): Response<uz.prestige.livewater.dayver.constructor.type.secondary.DeviceSecondaryType>
-
     @GET("users")
     suspend fun getOwners(): Response<OwnerSecondaryType>
-
-    @GET("users")
-    suspend fun getDayverOwners(): Response<uz.prestige.livewater.dayver.device.type.secondary_type.OwnerSecondaryType>
-
 
     @Multipart
     @POST("devices")
@@ -194,21 +143,10 @@ interface ApiService {
         @Query("page[limit]") limit: Int, @Query("page[offset]") offset: Int
     ): Response<RouteSecondaryType>
 
-    @GET("serverdata")
-    suspend fun getDayverRouteData(
-        @Query("page[limit]") limit: Int, @Query("page[offset]") offset: Int
-    ): Response<uz.prestige.livewater.dayver.route.types.secondary.RouteSecondaryType>
-
     @GET("basedata/{id}")
     suspend fun getRouteInfoById(
         @Path("id") id: String
     ): Response<BaseDataByIdSecondaryType>
-
-    @GET("basedata/{id}")
-    suspend fun getDayverRouteInfoById(
-        @Path("id") id: String
-    ): Response<uz.prestige.livewater.dayver.route.types.secondary.BaseDataByIdSecondaryType>
-
 
     @GET("/auth")
     suspend fun isValidToken(): Response<Any>
@@ -218,12 +156,6 @@ interface ApiService {
         @Query("page[limit]") limit: Int,
         @Query("page[offset]") offset: Int
     ): Response<UserSecondaryType>
-
-    @GET("/users")
-    suspend fun getDayverUsers(
-        @Query("page[limit]") limit: Int,
-        @Query("page[offset]") offset: Int
-    ): Response<DayverUserSecondaryType>
 
     @DELETE("/users/{id}")
     suspend fun deleteUser(@Path("id") id: String): Response<Any>
@@ -241,7 +173,6 @@ interface ApiService {
         @Path("id") id: String
     ): Response<RemoveRegionResponseType>
 
-
     @PATCH("regions/{id}")
     suspend fun updateRegion(
         @Path("id") id: String, @Body json: JsonObject
@@ -252,21 +183,9 @@ interface ApiService {
         @Body json: JsonObject
     ): Response<AddRegionResponseType>
 
-    @GET("/{serialNumber}")
-    suspend fun makeRequestToDevice(@Path("serialNumber") serialNumber: String): Response<Any>
-
-    @GET("basedata/last-updated")
-    suspend fun getLastUpdateDayver(): Response<LastUpdateDayverSecondaryType>
-
     @GET("devices/{id}")
     suspend fun getDeviceById(@Path("id") id: String): Response<DeviceResponseSecondaryType>
 
     @GET("users/{id}")
     suspend fun getLevelUserById(@Path("id") id: String): Response<UserResponseSecondaryDataType>
-
-    @GET("users/{id}")
-    suspend fun getDayverUserById(@Path("id") userId: String): Response<UserDayverSecondaryType>
-
-    @GET("devices/{id}")
-    suspend fun getDayverDeviceById(@Path("id") id: String): Response<DayverDeviceSecondaryType>
 }

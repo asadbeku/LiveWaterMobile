@@ -1,19 +1,24 @@
+package uz.prestige.livewater.level.device.add_device.view_model
+
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.device.UiState
-import uz.prestige.livewater.level.device.add_device.view_model.AddDeviceRepository
 import uz.prestige.livewater.level.device.type.DeviceDataPassType
 import uz.prestige.livewater.level.device.type.OwnerType
 import uz.prestige.livewater.level.constructor.type.RegionType
+import uz.prestige.livewater.utils.UiState
+import javax.inject.Inject
 
-class AddDeviceViewModel : ViewModel() {
-    private val repository = AddDeviceRepository()
+@HiltViewModel
+class AddDeviceViewModel @Inject constructor(
+    private val repository: AddDeviceRepository
+) : ViewModel() {
 
     private val _regions = MutableLiveData<List<RegionType>>()
     val regions: LiveData<List<RegionType>> get() = _regions
@@ -21,8 +26,8 @@ class AddDeviceViewModel : ViewModel() {
     private val _owners = MutableLiveData<List<OwnerType>>()
     val owners: LiveData<List<OwnerType>> get() = _owners
 
-    private val _error = MutableLiveData<UiState>()
-    val error: LiveData<UiState> get() = _error
+    private val _error = MutableLiveData<UiState<*>>()
+    val error: LiveData<UiState<*>> get() = _error
 
     fun getRegions() {
         viewModelScope.launch {
@@ -63,7 +68,8 @@ class AddDeviceViewModel : ViewModel() {
             repository.changeDeviceInfo(context, device)
                 .catch { handleError(it) }
                 .collect {
-                    _error.value = if (it) UiState.Success("Muvofaqiyatli o'zgartirildi") else UiState.Error("Qurilma maʼlumotlarini oʻzgartirib boʻlmadi")
+                    _error.value =
+                        if (it) UiState.Success("Muvofaqiyatli o'zgartirildi") else UiState.Error("Qurilma maʼlumotlarini oʻzgartirib boʻlmadi")
                 }
         }
     }

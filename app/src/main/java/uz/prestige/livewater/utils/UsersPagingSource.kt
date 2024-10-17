@@ -1,14 +1,14 @@
 package uz.prestige.livewater.utils
 
-import androidx.paging.LoadState
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.level.users.types.UserType
-import kotlin.reflect.typeOf
+import javax.inject.Inject
 
-class UsersPagingSource : PagingSource<Int, UserType>() {
+class UsersPagingSource @Inject constructor(
+    private val apiService: ApiService
+) : PagingSource<Int, UserType>() {
     private val limit: Int = 10  // Default limit
 
     override fun getRefreshKey(state: PagingState<Int, UserType>): Int? {
@@ -22,7 +22,7 @@ class UsersPagingSource : PagingSource<Int, UserType>() {
         val page = params.key ?: 0
 
         return try {
-            val response = NetworkLevel.buildService(ApiService::class.java).getLevelUsers(offset = page, limit = limit)
+            val response = apiService.getLevelUsers(offset = page, limit = limit)
 
             if (response.isSuccessful) {
                 response.body()?.data?.let { responseData ->
@@ -33,13 +33,13 @@ class UsersPagingSource : PagingSource<Int, UserType>() {
                             nextKey = if (responseData.size < limit) null else page + 1
                         )
                     } else {
-                        LoadResult.Error(throw Exception("No data available"))
+                        LoadResult.Error(Exception("No data available"))
                     }
                 }
             }
-            LoadResult.Error(throw Exception("Error: ${response.code()} - ${response.message()}"))
+            LoadResult.Error(Exception("Error: ${response.code()} - ${response.message()}"))
         } catch (e: Exception) {
-            LoadResult.Error(throw Exception("Error: ${e.message}"))
+            LoadResult.Error(Exception("Error: ${e.message}"))
         }
     }
 }

@@ -3,13 +3,13 @@ package uz.prestige.livewater.level.regions.view_model
 import com.google.gson.JsonObject
 import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.convertToRegionType
+import javax.inject.Inject
 
-class RegionsRepository {
+class RegionsRepository @Inject constructor(private val apiService: ApiService) {
 
     suspend fun getRegions() = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getRegions()
+        val response = apiService.getRegions()
 
         if (response.isSuccessful) {
             val regionsList = response.body()!!.convertToRegionType()
@@ -23,7 +23,7 @@ class RegionsRepository {
     }
 
     suspend fun updateRegion(id: String, json: JsonObject) = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).updateRegion(id, json)
+        val response = apiService.updateRegion(id, json)
 
         if (response.isSuccessful) {
             emit(response.body()?.msg)
@@ -34,7 +34,7 @@ class RegionsRepository {
     }
 
     suspend fun deleteRegion(id: String) = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).removeRegion(id = id)
+        val response = apiService.removeRegion(id = id)
 
         if (response.isSuccessful) response.body()
             ?.let { emit(it.msg) } else emit(response.body()?.msg)
@@ -42,7 +42,7 @@ class RegionsRepository {
 
     suspend fun addRegion(json: JsonObject) = flow {
 
-        val response = NetworkLevel.buildService(ApiService::class.java).addRegion(json)
+        val response = apiService.addRegion(json)
 
         if (response.isSuccessful && response.code() != 400) emit("Hudud muvofaqiyatli qo'shildi") else emit(
             "Xatolik mavjud"

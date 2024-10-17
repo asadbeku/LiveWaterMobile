@@ -9,14 +9,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityTestDeviceBinding
-import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.test.view_model.TestDeviceViewModel
+import uz.prestige.livewater.utils.UiState
 import uz.prestige.livewater.utils.toFormattedTime
 
+@AndroidEntryPoint
 class TestDeviceActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTestDeviceBinding
@@ -72,7 +74,7 @@ class TestDeviceActivity : AppCompatActivity() {
         viewModel.message.observe(this) { state ->
             val message = when (state) {
                 is UiState.Error -> state.message
-                is UiState.Success -> state.message
+                is UiState.Success -> state.data.toString()
                 else -> getString(R.string.default_message)
             }
 

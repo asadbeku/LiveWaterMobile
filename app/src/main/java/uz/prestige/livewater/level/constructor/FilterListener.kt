@@ -1,7 +1,7 @@
 package uz.prestige.livewater.level.constructor
 
 interface FilterListener {
-    fun onApply(startTime: String, endTime: String, deviceSerial: String, regionId: String)
+    fun onApply(startTime: String?, endTime: String?, deviceSerial: String, regionId: String)
 
     //        https://back2.livewater.uz/basedata?
     //        page[offset]=0&

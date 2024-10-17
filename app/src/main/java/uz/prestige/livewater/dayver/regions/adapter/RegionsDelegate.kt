@@ -4,8 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import uz.prestige.livewater.R
-import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.level.home.types.LastUpdateType
+import uz.prestige.livewater.dayver.constructor.type.RegionType
 import uz.prestige.livewater.utils.inflate
 
 class RegionsDelegate(

@@ -14,6 +14,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -21,16 +22,19 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentUserBinding
+import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.level.users.adapter.UsersAdapter
 import uz.prestige.livewater.level.users.adapter.UsersPagingAdapter
 import uz.prestige.livewater.level.users.view_model.UsersViewModel
 import uz.prestige.livewater.level.users.types.UserType
+import uz.prestige.livewater.level.users.view_model.UsersRepository
 
+@AndroidEntryPoint
 class UserFragment : Fragment() {
 
     private var _binding: FragmentUserBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: UsersViewModel by viewModels()
+    private val viewModel by viewModels<UsersViewModel>()
 
     private var userAdapter: UsersPagingAdapter? = null
 
@@ -144,10 +148,8 @@ class UserFragment : Fragment() {
     }
 
     private fun showLoadingState() {
-        binding.shimmerRecycler.apply {
-            visibility = View.VISIBLE
-            startShimmer()
-        }
+        binding.shimmerRecycler.visibility = View.VISIBLE
+        binding.shimmerRecycler.startShimmer()
         binding.emptyTextView.visibility = View.GONE
         binding.usersRecycler.visibility = View.GONE
     }

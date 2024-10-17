@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -16,18 +17,20 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.dayver.users.types.DayverUserType
 import uz.prestige.livewater.utils.UsersDayverPagingSource
+import javax.inject.Inject
 
-class UsersViewModel : ViewModel() {
-
-    private val repository = UsersRepository()
+@HiltViewModel
+class UsersViewModel @Inject constructor(
+    private val repository: UsersRepository,
+    private val usersDayverPagingSource: UsersDayverPagingSource
+) : ViewModel() {
 
     private var _userData = MutableLiveData<DayverUserType>()
     val userData: LiveData<DayverUserType> get() = _userData
 
-
     fun fetchUsers() = Pager(
         config = PagingConfig(pageSize = 10),
-        pagingSourceFactory = { UsersDayverPagingSource() }
+        pagingSourceFactory = { usersDayverPagingSource }
     ).flow.cachedIn(viewModelScope)
 
     fun saveUserId(id: String) = repository.saveUserId(id)

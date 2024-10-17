@@ -1,5 +1,8 @@
 package uz.prestige.livewater.dayver.device.add_device
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,26 +12,42 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityAddDeviceBinding
-import uz.prestige.livewater.dayver.device.UiState
 import uz.prestige.livewater.dayver.device.type.DeviceDataPassType
 import uz.prestige.livewater.dayver.constructor.type.DeviceType
+import uz.prestige.livewater.dayver.device.add_device.view_model.AddDeviceViewModel
+import uz.prestige.livewater.utils.UiState.*
+import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class AddNewDeviceActivity : AppCompatActivity() {
+
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    // This will store current location info
+    private var currentLocation: Location? = null
 
     private lateinit var binding: ActivityAddDeviceBinding
     private var fileUri: Uri? = null
     private lateinit var getContent: ActivityResultLauncher<String>
-    private val viewModel: uz.prestige.livewater.dayver.device.add_device.view_model.AddDeviceViewModel by viewModels()
+    private val viewModel: AddDeviceViewModel by viewModels()
     private var deviceInfo: DeviceType? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddDeviceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         setupUI()
         setupObservers()
@@ -88,6 +107,10 @@ class AddNewDeviceActivity : AppCompatActivity() {
             }
         }
 
+        binding.locationInput.setEndIconOnClickListener {
+            getFusedLocation()
+        }
+
         binding.testDeviceButton.setOnClickListener {
             showRandomStatus()
         }
@@ -98,6 +121,40 @@ class AddNewDeviceActivity : AppCompatActivity() {
 
         binding.backButton.setOnClickListener {
             finish()
+        }
+    }
+
+    private fun getFusedLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                permission.REQUEST_CODE
+            )
+        } else {
+
+            fusedLocationProviderClient.lastLocation
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        // Use the location object
+                        val latitude = location.latitude.toString()
+                        val longitude = location.longitude.toString()
+
+                        binding.locationInput.editText?.setText("$latitude, $longitude")
+                        Log.d("Location", "$latitude, $longitude")
+                        // Do something with the coordinates
+                    }
+                }
         }
     }
 
@@ -133,7 +190,7 @@ class AddNewDeviceActivity : AppCompatActivity() {
 
         viewModel.error.observe(this@AddNewDeviceActivity) { state ->
             when (state) {
-                is UiState.Error -> {
+                is Error -> {
                     Snackbar.make(
                         binding.addDeviceMainContainer,
                         state.message,
@@ -141,10 +198,10 @@ class AddNewDeviceActivity : AppCompatActivity() {
                     ).setBackgroundTint(getColor(R.color.redPrimary)).show()
                 }
 
-                is UiState.Success -> {
+                is Success<*> -> {
                     Snackbar.make(
                         binding.addDeviceMainContainer,
-                        state.message,
+                        state.data.toString(),
                         Snackbar.LENGTH_SHORT
                     ).setBackgroundTint(getColor(R.color.greenPrimary)).show()
                 }
@@ -245,5 +302,9 @@ class AddNewDeviceActivity : AppCompatActivity() {
 
     private fun getOwnerId(ownerName: String): String {
         return viewModel.getOwnerId(ownerName) ?: ""
+    }
+
+    object permission {
+        val REQUEST_CODE = 100
     }
 }

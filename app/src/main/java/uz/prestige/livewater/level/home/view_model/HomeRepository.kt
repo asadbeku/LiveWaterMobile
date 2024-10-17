@@ -6,10 +6,12 @@ import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.level.home.types.DeviceStatuses
 import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.convertTestTypeToLastUpdates
+import javax.inject.Inject
 
-class HomeRepository {
+class HomeRepository @Inject constructor(
+    private val apiService: ApiService
+) {
     private var globalList: List<LastUpdateType> = emptyList()
 
     suspend fun getDevicesStatusesFlow(): Flow<DeviceStatuses> = flow {
@@ -17,14 +19,23 @@ class HomeRepository {
         val totalCount = globalList.size
         val inactiveCount = totalCount - activeCount
 
-        Log.d("HomeDayverRepository", "Device Statuses - Active: $activeCount, Inactive: $inactiveCount, Total: $totalCount")
+        Log.d(
+            "HomeDayverRepository",
+            "Device Statuses - Active: $activeCount, Inactive: $inactiveCount, Total: $totalCount"
+        )
 
-        emit(DeviceStatuses(all = totalCount.toString(), active = activeCount.toString(), inActive = inactiveCount.toString()))
+        emit(
+            DeviceStatuses(
+                all = totalCount.toString(),
+                active = activeCount.toString(),
+                inActive = inactiveCount.toString()
+            )
+        )
     }
 
     suspend fun getLastUpdates(): Flow<List<LastUpdateType>> = flow {
         try {
-            val response = NetworkLevel.buildService(ApiService::class.java).getLastUpdate()
+            val response = apiService.getLastUpdate()
 
             if (response.isSuccessful) {
                 globalList = response.body()?.convertTestTypeToLastUpdates() ?: emptyList()

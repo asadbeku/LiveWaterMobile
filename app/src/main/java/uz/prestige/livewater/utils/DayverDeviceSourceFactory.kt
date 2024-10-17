@@ -3,10 +3,14 @@ package uz.prestige.livewater.utils
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import uz.prestige.livewater.dayver.constructor.type.DeviceType
+import uz.prestige.livewater.dayver.network.ApiServiceDayver
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkDayver
+import uz.prestige.livewater.dayver.network.NetworkDayver
+import javax.inject.Inject
 
-class DayverDeviceSourceFactory : PagingSource<Int, DeviceType>() {
+class DayverDeviceSourceFactory @Inject constructor(
+    private val apiService: ApiServiceDayver
+) : PagingSource<Int, DeviceType>() {
 
     private val limit = 10
 
@@ -22,8 +26,7 @@ class DayverDeviceSourceFactory : PagingSource<Int, DeviceType>() {
         return try {
             val page = params.key ?: 0
 
-            val response = NetworkDayver.buildService(ApiService::class.java)
-                .getDayverDevices(limit = limit, offset = page)
+            val response = apiService.getDayverDevices(limit = limit, offset = page)
 
             if (response.isSuccessful && response.body() != null) {
                 val data = response.body()!!.data

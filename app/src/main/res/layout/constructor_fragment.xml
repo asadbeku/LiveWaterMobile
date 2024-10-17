@@ -15,22 +15,15 @@
         android:elevation="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.MaterialComponents.Toolbar.Primary"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="34dp"
-                android:fontFamily="@font/noto_sans_bold"
-                android:text="Konstruktor"
-                android:textColor="@color/white"
-                android:textSize="24sp" />
-
-        </LinearLayout>
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="4dp"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:menu="@menu/constructor_menu"
+            app:title="Konstruktor" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -103,21 +96,21 @@
                 android:id="@+id/constructorRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="visible"
                 android:layout_marginBottom="12dp"
+                android:visibility="visible"
                 tools:itemCount="7"
                 tools:listitem="@layout/item_constructor" />
 
             <TextView
+                android:id="@+id/emptyTextView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/emptyTextView"
                 android:layout_marginTop="12dp"
                 android:fontFamily="@font/noto_sans_bold"
                 android:gravity="center"
-                android:visibility="gone"
                 android:text="Ma'lumot topilmadi"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:visibility="gone" />
 
         </LinearLayout>
 

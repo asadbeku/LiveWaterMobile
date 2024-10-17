@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.ActivityAbout
 import uz.prestige.livewater.R
 import uz.prestige.livewater.auth.LoginActivity
@@ -20,6 +21,7 @@ import uz.prestige.livewater.dayver.home.view_model.HomeDayverViewModel
 import uz.prestige.livewater.dayver.types.LastUpdateTypeDayver
 import uz.prestige.livewater.level.home.types.DeviceStatuses
 
+@AndroidEntryPoint
 class DayverHomeFragment : Fragment(R.layout.fragment_dayver_home) {
 
     private var _binding: FragmentDayverHomeBinding? = null

@@ -4,17 +4,21 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.home.types.LastUpdateType
+import uz.prestige.livewater.utils.UiState
+import javax.inject.Inject
 
-class TestDeviceViewModel : ViewModel() {
-    private val repository = TestDeviceRepository()
+@HiltViewModel
+class TestDeviceViewModel @Inject constructor(
+    private val repository: TestDeviceRepository
+) : ViewModel() {
 
-    private var _message = MutableLiveData<UiState>()
+    private var _message = MutableLiveData<UiState<*>>()
     val message get() = _message
 
     var updatingState = MutableLiveData<Boolean>()

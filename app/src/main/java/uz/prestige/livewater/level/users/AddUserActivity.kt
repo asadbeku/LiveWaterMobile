@@ -8,17 +8,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.JsonObject
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityAddUserBinding
 import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.level.device.UiState
 import uz.prestige.livewater.level.network.NetworkLevel
-import uz.prestige.livewater.dayver.users.view_model.AddUserViewModel
+import uz.prestige.livewater.level.users.view_model.AddUserViewModel
 import uz.prestige.livewater.level.users.types.UserType
+import uz.prestige.livewater.utils.UiState
 import uz.prestige.livewater.utils.removeFirstThreeDigits
 
+@AndroidEntryPoint
 class AddUserActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddUserBinding
@@ -183,7 +185,7 @@ class AddUserActivity : AppCompatActivity() {
 
                 is UiState.Success -> {
                     var message = ""
-                    if (state.message == "Changed") {
+                    if (state.data.toString() == "Changed") {
                         message = "Muvofaqiyatli o'zgartirildi"
                     }
                     Snackbar.make(

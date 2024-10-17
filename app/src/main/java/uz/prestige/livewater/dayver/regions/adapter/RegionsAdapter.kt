@@ -2,7 +2,7 @@ package uz.prestige.livewater.dayver.regions.adapter
 
 import androidx.recyclerview.widget.DiffUtil
 import com.hannesdorfmann.adapterdelegates4.AsyncListDifferDelegationAdapter
-import uz.prestige.livewater.level.constructor.type.RegionType
+import uz.prestige.livewater.dayver.constructor.type.RegionType
 
 class RegionsAdapter(private val buttonClickListener: ButtonClickListener) :
     AsyncListDifferDelegationAdapter<RegionType>(LastUpdateDiffutilsCallBack()) {

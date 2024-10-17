@@ -9,15 +9,17 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.JsonObject
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.ActivityRegionsBinding
 import uz.prestige.livewater.dayver.regions.view_model.RegionsViewModel
-import uz.prestige.livewater.level.constructor.type.RegionType
-import uz.prestige.livewater.dayver.device.UiState
+import uz.prestige.livewater.dayver.constructor.type.RegionType
+import uz.prestige.livewater.utils.UiState
 import uz.prestige.livewater.dayver.regions.adapter.ButtonClickListener
 import uz.prestige.livewater.dayver.regions.adapter.RegionNameListener
 import uz.prestige.livewater.dayver.regions.adapter.RegionsAdapter
 
+@AndroidEntryPoint
 class DayverRegionsActivity : AppCompatActivity(), ButtonClickListener, RegionNameListener {
 
     private lateinit var binding: ActivityRegionsBinding
@@ -63,7 +65,7 @@ class DayverRegionsActivity : AppCompatActivity(), ButtonClickListener, RegionNa
         viewModel.message.observe(this) { state ->
             val message = when (state) {
                 is UiState.Error -> state.message
-                is UiState.Success -> state.message
+                is UiState.Success -> state.data.toString()
                 else -> getString(R.string.default_message)
             }
 

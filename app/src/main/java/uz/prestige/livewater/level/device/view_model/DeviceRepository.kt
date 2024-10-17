@@ -5,13 +5,14 @@ import uz.prestige.livewater.level.network.ApiService
 import uz.prestige.livewater.level.network.NetworkLevel
 import uz.prestige.livewater.utils.convertDeviceSecondaryToDeviceType
 import uz.prestige.livewater.utils.convertToDeviceType
+import javax.inject.Inject
 
-class DeviceRepository {
+class DeviceRepository @Inject constructor(private val apiService: ApiService) {
 
     private val deviceIdList = mutableListOf<String>()
 
     suspend fun getDevicesList() = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getDevices(limit = 100, offset = 0)
+        val response = apiService.getDevices(limit = 100, offset = 0)
 
         if (response.isSuccessful) {
             response.body()?.let { devices ->
@@ -23,7 +24,7 @@ class DeviceRepository {
     }
 
     suspend fun getDeviceDataById(id: String) = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getDeviceById(id)
+        val response = apiService.getDeviceById(id)
 
         if (response.isSuccessful) {
             response.body()?.let { device ->
@@ -35,7 +36,8 @@ class DeviceRepository {
     }
 
     fun getDeviceId(position: Int): String {
-        return deviceIdList.getOrNull(position) ?: throw IndexOutOfBoundsException("Invalid position: $position")
+        return deviceIdList.getOrNull(position)
+            ?: throw IndexOutOfBoundsException("Invalid position: $position")
     }
 
     fun saveDeviceId(deviceId: String) {

@@ -2,13 +2,16 @@ package uz.prestige.livewater.level.test.view_model
 
 import kotlinx.coroutines.flow.flow
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.DeviceTestNetwork
-import uz.prestige.livewater.level.network.NetworkLevel
+import uz.prestige.livewater.level.network.TestApiService
 import uz.prestige.livewater.utils.convertTestTypeToLastUpdates
+import javax.inject.Inject
 
-class TestDeviceRepository {
+class TestDeviceRepository @Inject constructor(
+    private val apiService: ApiService,
+    private val testApiService: TestApiService
+) {
     suspend fun checkBySerialNumber(serialNumber: String) = flow {
-        val response = NetworkLevel.buildService(ApiService::class.java).getLastUpdate()
+        val response = apiService.getLastUpdate()
 
         response.body()?.convertTestTypeToLastUpdates()?.map { info ->
             if (info.serial == serialNumber) {
@@ -21,7 +24,7 @@ class TestDeviceRepository {
 
     suspend fun makeRequestToServer(serialNumber: String) = flow {
         val response =
-            DeviceTestNetwork.api.makeRequestToDevice(serialNumber)
+            testApiService.makeRequestToDevice(serialNumber)
 
         if (response.isSuccessful) emit(true) else emit(false)
     }

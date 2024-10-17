@@ -14,6 +14,7 @@ import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -25,6 +26,7 @@ import uz.prestige.livewater.dayver.users.adapter.UsersPagingAdapter
 import uz.prestige.livewater.dayver.users.types.DayverUserType
 import uz.prestige.livewater.dayver.users.view_model.UsersViewModel
 
+@AndroidEntryPoint
 class UserFragment : Fragment() {
 
     private var _binding: FragmentUserBinding? = null

@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -22,13 +23,13 @@ import uz.prestige.livewater.level.constructor.adapter.ConstructorPagingAdapter
 import uz.prestige.livewater.level.constructor.view_model.ConstructorViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 
+@AndroidEntryPoint
 class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     FilterListener {
 
     private var _binding: ConstructorFragmentBinding? = null
     private val binding get() = _binding!!
 
-    //    private var constructorAdapter: ConstructorAdapter? = null
     private val viewModel: ConstructorViewModel by viewModels()
     private var constructorAdapter: ConstructorPagingAdapter? = null
 
@@ -55,6 +56,20 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
                 uz.prestige.livewater.level.constructor.FilterBottomSheetDialogFragment()
             bottomSheetFragment.fListener = this // Pass the listener reference
             bottomSheetFragment.show(childFragmentManager, bottomSheetFragment.tag)
+        }
+
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.download -> {
+                    viewModel.downloadExcel()
+                    true
+                }
+
+                else -> {
+                    false
+                }
+            }
+
         }
     }
 
@@ -95,8 +110,8 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     }
 
     private fun getConstructorData(
-        startTime: String,
-        endTime: String,
+        startTime: String?,
+        endTime: String?,
         regionId: String,
         deviceId: String
     ) {
@@ -169,24 +184,28 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
 
     @SuppressLint("SetTextI18n")
     override fun onApply(
-        startTime: String,
-        endTime: String,
+        startTime: String?,
+        endTime: String?,
         regionId: String,
         deviceId: String
     ) {
         Log.d("onApplyTag", "onApply: $startTime $endTime $regionId $deviceId")
         if (startTime == "all" || endTime == "all") {
             binding.constructorDateTextView.text = "Oxirgi yangilanishlar"
-        } else if (startTime.isEmpty() || endTime.isEmpty()) {
+        } else if (startTime.isNullOrEmpty() || endTime.isNullOrEmpty()) {
             binding.constructorDateTextView.text = "Oxirgi yangilanishlar"
         } else {
             binding.constructorDateTextView.text =
                 "${startTime.toLong().toFormattedDate()} - ${endTime.toLong().toFormattedDate()}"
         }
 
-//        viewModel.getConstructor(startTime, endTime, regionId, deviceId)
-
         getConstructorData(startTime, endTime, regionId, deviceId)
+        viewModel.saveFileConfig(
+            startTime = startTime,
+            endTime = endTime,
+            regionId = regionId,
+            deviceId = deviceId
+        )
 
         Log.d("onApplyTag", "onApply: $regionId $deviceId")
     }

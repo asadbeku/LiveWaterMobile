@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.catch
@@ -13,9 +14,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.home.types.LastUpdateType
 import uz.prestige.livewater.level.home.types.DeviceStatuses
+import javax.inject.Inject
 
-class HomeViewModel : ViewModel() {
-    private val repository = HomeRepository()
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: HomeRepository
+) : ViewModel() {
 
     private val _devicesStatuses = MutableLiveData<DeviceStatuses>()
     val deviceStatuses: LiveData<DeviceStatuses>

@@ -1,5 +1,6 @@
 package uz.prestige.livewater.dayver.constructor
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -22,6 +24,7 @@ import uz.prestige.livewater.dayver.constructor.adapter.ConstructorPagingAdapter
 import uz.prestige.livewater.dayver.constructor.view_model.ConstructorViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 
+@AndroidEntryPoint
 class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     FilterListener {
 
@@ -44,6 +47,7 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
+
     }
 
     private fun setupUI() {
@@ -55,6 +59,20 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
                 FilterBottomSheetDialogFragment()
             bottomSheetFragment.fListener = this@ConstructorFragment // Pass the listener reference
             bottomSheetFragment.show(childFragmentManager, bottomSheetFragment.tag)
+        }
+
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.download -> {
+                    viewModel.downloadExcel()
+                    true
+                }
+
+                else -> {
+
+                    false
+                }
+            }
         }
     }
 
@@ -75,10 +93,7 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
     }
 
     private fun setupObservers() {
-//        viewModel.getConstructor("", "", "all", "all")
-//        viewModel.constructorList.observe(viewLifecycleOwner) {
-//            this.constructorAdapter?.submitData(it)
-//        }
+
         viewModel.updatingState.observe(viewLifecycleOwner) { isUpdating ->
             if (isUpdating) {
                 binding.shimmerRecycler.visibility = View.VISIBLE
@@ -91,14 +106,14 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
             }
         }
 
-        getConstructorData("", "", "all", "all")
+        getConstructorData(null, null, null, null)
     }
 
     private fun getConstructorData(
-        startTime: String,
-        endTime: String,
-        regionId: String,
-        deviceId: String
+        startTime: String?,
+        endTime: String?,
+        regionId: String?,
+        deviceId: String?
     ) {
         lifecycleScope.launch {
             viewModel.fetchConstructorData(startTime, endTime, regionId, deviceId)
@@ -114,13 +129,18 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
                             when (loadState.source.refresh) {
                                 is LoadState.Error -> {
                                     val errorState = loadState.source.refresh as LoadState.Error
-                                    Log.d("ConstructorFragment", "Error: ${errorState.error.message}")
+                                    Log.d(
+                                        "ConstructorFragment",
+                                        "Error: ${errorState.error.message}"
+                                    )
                                     showErrorState()
                                 }
+
                                 is LoadState.Loading -> {
                                     Log.d("ConstructorFragment", "Loading")
                                     showLoadingState()
                                 }
+
                                 is LoadState.NotLoading -> {
                                     Log.d("ConstructorFragment", "Loaded")
                                     showContentState()
@@ -161,31 +181,33 @@ class ConstructorFragment : Fragment(R.layout.constructor_fragment),
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onApply(
-        startTime: String,
-        endTime: String,
-        regionId: String,
-        deviceId: String
+        startTime: String?,
+        endTime: String?,
+        regionId: String?,
+        deviceId: String?
     ) {
         Log.d("onApplyTag", "onApply: $startTime $endTime $regionId $deviceId")
-        if (startTime == "all" || endTime == "all") {
-            binding.constructorDateTextView.text = "Oxirgi yangilanishlar"
-        } else if (startTime.isEmpty() || endTime.isEmpty()) {
-            binding.constructorDateTextView.text = "Oxirgi yangilanishlar"
-        } else {
-            binding.constructorDateTextView.text =
+        binding.constructorDateTextView.text =
+            if (startTime.isNullOrEmpty() || endTime.isNullOrEmpty()) {
+                "Oxirgi yangilanishlar"
+            } else {
                 "${startTime.toLong().toFormattedDate()} - ${endTime.toLong().toFormattedDate()}"
-        }
+            }
 
-//        viewModel.getConstructor(startTime, endTime, regionId, deviceId)
-
-        getConstructorData(startTime, endTime, regionId, deviceId)
+        viewModel.generateFilterUrl(startTime, endTime, regionId, deviceId)
+        getConstructorData(
+            startTime = startTime,
+            endTime = endTime,
+            regionId = regionId,
+            deviceId = deviceId
+        )
 
         Log.d("onApplyTag", "onApply: $regionId $deviceId")
     }

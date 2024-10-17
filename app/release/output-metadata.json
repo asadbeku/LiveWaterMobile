@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "uz.prestige.livewater",
+  "applicationId": "uz.prestige.livewater.release",
   "variantName": "release",
   "elements": [
     {

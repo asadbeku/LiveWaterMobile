@@ -8,26 +8,27 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.users.types.UserType
 import uz.prestige.livewater.utils.UsersPagingSource
+import javax.inject.Inject
 
-class UsersViewModel : ViewModel() {
-
-    private val repository = UsersRepository()
+@HiltViewModel
+class UsersViewModel @Inject constructor(
+    private val repository: UsersRepository,
+    private val pagingSource: UsersPagingSource
+) : ViewModel() {
 
     private var _userInfo = MutableLiveData<UserType>()
     val userInfo: LiveData<UserType> get() = _userInfo
 
     fun fetchUsersData() = Pager(
-        config = PagingConfig(pageSize = 6),
-        pagingSourceFactory = { UsersPagingSource() }
+        config = PagingConfig(pageSize = 10),
+        pagingSourceFactory = { pagingSource }
     ).flow.cachedIn(viewModelScope)
 
     fun getUserInfoById(id: String) {

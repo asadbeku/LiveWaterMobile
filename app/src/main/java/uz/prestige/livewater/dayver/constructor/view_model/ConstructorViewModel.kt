@@ -8,35 +8,38 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.dayver.constructor.type.ConstructorType
+import uz.prestige.livewater.dayver.network.ApiServiceDayver
+import uz.prestige.livewater.level.network.ApiService
 import uz.prestige.livewater.utils.ConstructorPagingSource
 import uz.prestige.livewater.utils.DayverConstructorPagingSource
+import javax.inject.Inject
 
-class ConstructorViewModel : ViewModel() {
-
-    private val repository = ConstructorRepository()
-
-    private var _constructorList = MutableLiveData<List<ConstructorType>>()
-    val constructorList: LiveData<List<ConstructorType>>
-        get() = _constructorList
+@HiltViewModel
+class ConstructorViewModel @Inject constructor(
+    private val apiService: ApiServiceDayver,
+    private val repository: ConstructorRepository
+) : ViewModel() {
 
     private var _updatingState = MutableLiveData<Boolean>()
     val updatingState: LiveData<Boolean>
         get() = _updatingState
 
     fun fetchConstructorData(
-        startTime: String,
-        endTime: String,
-        deviceSerial: String,
-        regionId: String
+        startTime: String?,
+        endTime: String?,
+        deviceSerial: String?,
+        regionId: String?
     ) = Pager(
-        config = PagingConfig(pageSize = 6),
+        config = PagingConfig(pageSize = 10),
         pagingSourceFactory = {
             DayverConstructorPagingSource(
+                apiService,
                 startTime,
                 endTime,
                 regionId,
@@ -45,31 +48,14 @@ class ConstructorViewModel : ViewModel() {
         }).flow.cachedIn(viewModelScope).catch { Log.e("ConstructorViewModel", "$it") }
         .flowOn(Dispatchers.IO)
 
-    fun getConstructor(startTime: String, endTime: String, deviceSerial: String, regionId: String) {
-        viewModelScope.launch {
+    fun generateFilterUrl(
+        startTime: String?,
+        endTime: String?,
+        regionId: String?,
+        deviceId: String?
+    ) = repository.generateFilterUrl(startTime, endTime, regionId, deviceId)
 
-            _updatingState.postValue(true)
-
-            repository.getConstructorList(
-                offset = 0,
-                limit = 20,
-                startTime = startTime,
-                endTime = endTime,
-                regionId = regionId,
-                deviceSerial = deviceSerial
-            )
-                .catch {
-                    _updatingState.postValue(false)
-                    Log.e("ConstructorViewModel", "$it")
-                }
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    _constructorList.postValue(it)
-                    _updatingState.postValue(false)
-                }
-        }
-
+    fun downloadExcel() {
+        repository.downloadFileToInternalStorage()
     }
-
-
 }

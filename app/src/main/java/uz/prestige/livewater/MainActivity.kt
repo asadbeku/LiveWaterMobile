@@ -8,8 +8,10 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navGraphViewModels
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.auth.TokenManager
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
@@ -33,10 +35,8 @@ class MainActivity : AppCompatActivity() {
             else -> throw IllegalArgumentException("Unsupported profile type: $profileType")
         }
 
-
         // Set the nav graph on the NavController
         navController.graph = navGraph
-
 
         if (role == "admin") {
             bottomNav.inflateMenu(R.menu.bottom_navigation_menu_admin)

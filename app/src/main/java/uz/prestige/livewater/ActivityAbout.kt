@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.databinding.ActivityMapBinding
 import uz.prestige.livewater.databinding.FragmentAboutBinding
 import uz.prestige.livewater.utils.convertMillisToDateTime
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@AndroidEntryPoint
 class ActivityAbout : AppCompatActivity() {
 
     private var _binding: FragmentAboutBinding? = null

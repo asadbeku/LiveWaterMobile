@@ -14,7 +14,7 @@ object DeviceTestNetwork {
             .build()
     }
 
-    val api: ApiService by lazy {
-        retrofit.create(ApiService::class.java)
+    fun <T> buildService(service: Class<T>): T {
+        return retrofit.create(service)
     }
 }

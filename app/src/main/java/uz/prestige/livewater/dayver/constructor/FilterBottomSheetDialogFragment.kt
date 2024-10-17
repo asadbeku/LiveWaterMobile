@@ -1,6 +1,8 @@
 package uz.prestige.livewater.dayver.constructor
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,11 +15,13 @@ import androidx.core.util.Pair
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import dagger.hilt.android.AndroidEntryPoint
 import uz.prestige.livewater.R
 import uz.prestige.livewater.databinding.FragmentFilterBinding
 import uz.prestige.livewater.dayver.constructor.view_model.FilterViewModel
 import uz.prestige.livewater.utils.toFormattedDate
 
+@AndroidEntryPoint
 class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     internal var fListener: FilterListener? = null
@@ -26,10 +30,10 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
     private val viewModel: FilterViewModel by viewModels()
 
-    private var regionId = "all"
-    private var deviceId = "all"
-    private var startTime = ""
-    private var endTime = ""
+    private var regionId: String? = null
+    private var deviceId: String? = null
+    private var startTime: String? = null
+    private var endTime: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -37,7 +41,6 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
         _binding = FragmentFilterBinding.inflate(inflater, container, false)
         return binding.root
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,18 +50,25 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun setupObservers() {
         viewModel.getRegions()
-        viewModel.getDevices("all")
+        viewModel.getDevices()
 
         viewModel.regionsLiveData.observe(viewLifecycleOwner) { regions ->
             setupRadioButtons(regions.map { it.name })
         }
 
         viewModel.serialNumbersLiveData.observe(viewLifecycleOwner) { dropDown(it) }
+        viewModel.getDevices()
     }
 
     private fun setupClickListeners() {
         binding.applyButton.setOnClickListener {
-            fListener?.onApply(startTime, endTime, deviceId, regionId)
+            Log.d("onApplyTag", "onApply: $startTime $endTime $regionId $deviceId")
+            fListener?.onApply(
+                startTime = startTime,
+                endTime = endTime,
+                regionId = regionId,
+                deviceSerial = deviceId
+            )
             dismiss()
         }
 
@@ -67,6 +77,7 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.cardViewDate.setOnClickListener { showDatePicker() }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showDatePicker() {
         val dateRangePicker =
 
@@ -147,7 +158,7 @@ class FilterBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.autoCompleteTextView.setOnItemClickListener { parent, _, position, _ ->
             val selectedItem = if (parent.getItemAtPosition(position)
                     .toString() == "Barcha qurilmalar"
-            ) "all" else parent.getItemAtPosition(position).toString()
+            ) null else parent.getItemAtPosition(position).toString()
             deviceId = viewModel.getDevicesIdBySerialNumber(selectedItem)
         }
     }

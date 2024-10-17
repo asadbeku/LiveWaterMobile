@@ -4,9 +4,11 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import uz.prestige.livewater.level.constructor.type.DeviceType
 import uz.prestige.livewater.level.network.ApiService
-import uz.prestige.livewater.level.network.NetworkLevel
+import javax.inject.Inject
 
-class LevelDevicePagingSource : PagingSource<Int, DeviceType>() {
+class LevelDevicePagingSource @Inject constructor(
+    private val apiService: ApiService
+) : PagingSource<Int, DeviceType>() {
 
     private val limit: Int = 6  // Default limit
 
@@ -20,8 +22,7 @@ class LevelDevicePagingSource : PagingSource<Int, DeviceType>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DeviceType> {
         return try {
             val page = params.key ?: 0
-            val response = NetworkLevel.buildService(ApiService::class.java)
-                .getDevices(page, limit)
+            val response = apiService.getDevices(page, limit)
 
             if (response.isSuccessful) {
                 response.body()?.data?.let { responseData ->

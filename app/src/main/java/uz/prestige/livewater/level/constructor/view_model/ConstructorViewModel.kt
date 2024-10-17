@@ -8,66 +8,52 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import uz.prestige.livewater.level.constructor.type.ConstructorType
+import uz.prestige.livewater.level.network.ApiService
 import uz.prestige.livewater.utils.ConstructorPagingSource
+import javax.inject.Inject
 
-class ConstructorViewModel : ViewModel() {
-
-    private val repository = ConstructorRepository()
-
-    private var _constructorList = MutableLiveData<List<ConstructorType>>()
-    val constructorList: LiveData<List<ConstructorType>>
-        get() = _constructorList
+@HiltViewModel
+class ConstructorViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val repository: ConstructorRepository
+) : ViewModel() {
 
     private var _updatingState = MutableLiveData<Boolean>()
     val updatingState: LiveData<Boolean>
         get() = _updatingState
 
     fun fetchConstructorData(
-        startTime: String,
-        endTime: String,
+        startTime: String?,
+        endTime: String?,
         deviceSerial: String,
         regionId: String
     ) = Pager(
         config = PagingConfig(pageSize = 6),
         pagingSourceFactory = {
             ConstructorPagingSource(
-                startTime,
-                endTime,
+                apiService,
+                startTime ?: "946666800000",
+                endTime ?: "1893438000000",
                 regionId,
                 deviceSerial
             )
         }).flow.cachedIn(viewModelScope)
 
-    fun getConstructor(startTime: String, endTime: String, deviceSerial: String, regionId: String) {
-        viewModelScope.launch {
-
-            _updatingState.postValue(true)
-
-            repository.getConstructorList(
-                offset = 0,
-                limit = 20,
-                startTime = startTime,
-                endTime = endTime,
-                regionId = regionId,
-                deviceSerial = deviceSerial
-            )
-                .catch {
-                    _updatingState.postValue(false)
-                    Log.e("ConstructorViewModel", "$it")
-                }
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    _constructorList.postValue(it)
-                    _updatingState.postValue(false)
-                }
-        }
-
+    fun downloadExcel() {
+        repository.downloadFileToInternalStorage()
     }
 
-
+    fun saveFileConfig(startTime: String?, endTime: String?, regionId: String, deviceId: String) =
+        repository.generateFilterUrl(
+            startTime = startTime,
+            endTime = endTime,
+            regionId = regionId,
+            deviceId = deviceId
+        )
 }
